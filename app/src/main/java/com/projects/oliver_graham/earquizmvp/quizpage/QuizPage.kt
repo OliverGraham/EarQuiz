@@ -1,5 +1,6 @@
 package com.projects.oliver_graham.earquizmvp.quizpage
 
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.*
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.keyframes
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.projects.oliver_graham.earquizmvp.R
 import com.projects.oliver_graham.earquizmvp.data.QuizQuestion
 import kotlinx.coroutines.delay
@@ -44,7 +46,6 @@ import kotlinx.coroutines.withContext
 fun QuizPage(viewModel: QuizPageViewModel) {
 
     val scope = rememberCoroutineScope()
-
 
     // entire body
     Column(
@@ -113,7 +114,7 @@ fun QuizPage(viewModel: QuizPageViewModel) {
                         viewModel.playButtonEnabled.value = false
 
                         // set timer
-                        delay(5000)
+                        delay(4500)
 
                         viewModel.playButtonEnabled.value = true
                     }

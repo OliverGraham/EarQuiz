@@ -75,5 +75,8 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0"
 
+    // Accompanist (for ui controller only?)
+    implementation "com.google.accompanist:accompanist-systemuicontroller:0.17.0"
+
     // Nav and Hilt later...
 }

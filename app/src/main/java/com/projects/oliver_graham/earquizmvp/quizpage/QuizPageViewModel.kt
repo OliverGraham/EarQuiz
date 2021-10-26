@@ -38,7 +38,6 @@ class QuizPageViewModel(application: Application) : AndroidViewModel(application
     val submitButtonEnabled: MutableState<Boolean> = mutableStateOf(false)
     val playButtonEnabled: MutableState<Boolean> = mutableStateOf(true)
 
-  //  val currentCorrectAnswer: MutableState<QuizQuestion> = mutableStateOf(QuizQuestion("", ""))
     val currentCorrectAnswer:
           MutableState<QuizQuestion> = mutableStateOf(QuizQuestion("", "", ""))
 
@@ -93,8 +92,6 @@ class QuizPageViewModel(application: Application) : AndroidViewModel(application
         val radioLabelsMap = QuestionsRepo.getRadioLabelsMap()
         val randomIntervals = radioLabelsMap.keys.asSequence().shuffled().take(4).toMutableList()
 
-        // radio buttons will contain 4 random choices
-        //val radioGroup = ArrayList<RadioQuizInfo>()
         randomIntervals.forEach { interval ->
             //radioGroup.add(RadioQuizInfo(interval, radioLabelsMap.getValue(interval)))
             radioGroup.add(QuizQuestion(interval, radioLabelsMap.getValue(interval), ""))
