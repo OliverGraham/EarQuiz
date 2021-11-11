@@ -1,10 +1,16 @@
 package com.projects.oliver_graham.earquizmvp.data
 
+import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Immutable
+import com.projects.oliver_graham.earquizmvp.R
 
 @Immutable
 data class Note(
-    val id: Int         // math to cehck if further away than an octave, get new note othersiwe
+    val id: Int,
+    val name: String,
+    val accidental: Int,         // -1 == flat, 0 == natural, 1 == sharp
+    val soundPath: String,
+    @DrawableRes val imageId: Int
 ) {
 
 }

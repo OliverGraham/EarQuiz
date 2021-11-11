@@ -6,10 +6,10 @@ import androidx.compose.runtime.Immutable
 
 @Immutable
 data class QuizQuestion(
-    val id: String,
+    val id: Int,
     val text: String,
    // @DrawableRes val imageId: Int,      // put image in res folder, then --> asset = imageResource(post.imageId),
-    val soundFilePath: String
+    val soundFilePath: String = ""
 )
 
 @Immutable
