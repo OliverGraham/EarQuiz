@@ -9,16 +9,22 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.Composable
@@ -33,9 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.projects.oliver_graham.earquizmvp.ui.CenteredContentRow
-import com.projects.oliver_graham.earquizmvp.ui.LargeText
-import com.projects.oliver_graham.earquizmvp.ui.MediumButton
+import com.projects.oliver_graham.earquizmvp.ui.*
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -58,7 +62,7 @@ fun HomeScreen(
             }
         }
         // make an expandable quiz description, with button, for every description in the repo
-        items(viewModel.quizDescriptions) { quizDescription ->
+        itemsIndexed(viewModel.quizDescriptions) { index, quizDescription ->
             Spacer(
                 modifier = Modifier.padding(vertical = 8.dp)
             )
@@ -70,23 +74,26 @@ fun HomeScreen(
                 ExpandableRow(                   // change name to ExpandableWideCard?
                     title = quizDescription.title,
                     quizDescriptions = quizDescription.descriptions
-
                 )
-                MediumButton(onClick = {}) {     // but as SmallButton
-                    Text("GO")
-                }
+
+                // only intervals quiz (index 0) is available, so disable other buttons
+                val isIconButtonEnabled = remember { mutableStateOf(index == 0) }
+
+                CircularIconButton(
+                    onClick = { viewModel.onQuizButtonClick() },
+                    icon = Icons.Default.ArrowForward,
+                    mutableEnabled = isIconButtonEnabled,
+                    buttonBackgroundColor =     // gray background if button is disabled
+                        if (isIconButtonEnabled.value) Color.Unspecified
+                        else MaterialTheme.colors.background
+                )
             }
             Spacer(
                 modifier = Modifier.padding(vertical = 8.dp)
             )
-
         }
 
     }
-
-
-
-
 }
 
 @Composable
@@ -95,12 +102,10 @@ fun HeaderRow(
     logo: Int,              // logos should be painterResource?
     otherLogo: Int
 ) {
-    Row() {
+    Row {
         LargeText(text = headerTitle)
         // Icon(painter = , contentDescription = )
     }
-
-
 }
 
 

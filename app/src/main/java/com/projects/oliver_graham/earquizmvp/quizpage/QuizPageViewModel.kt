@@ -20,12 +20,14 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 import android.media.MediaPlayer.OnPreparedListener
 import android.util.Log
+import androidx.lifecycle.ViewModel
 import com.projects.oliver_graham.earquizmvp.data.Note
 import java.lang.Math.abs
 import kotlin.random.Random
 
 
-class QuizPageViewModel(application: Application) : AndroidViewModel(application) {
+// class QuizPageViewModel(application: Application) : AndroidViewModel(application) {
+class QuizPageViewModel() : ViewModel() {
 
     val quizName = "Intervals"          // get quiz name from nav?
     val totalQuestions = 2              // could pass different amount later
@@ -49,7 +51,7 @@ class QuizPageViewModel(application: Application) : AndroidViewModel(application
 
     val radioGroup: SnapshotStateList<QuizQuestion> = mutableStateListOf()
 
-    private var appContext: Application? = null
+    //private var appContext: Application? = null
     var player1: MediaPlayer? = null
     var player2: MediaPlayer? = null
 
@@ -106,8 +108,8 @@ class QuizPageViewModel(application: Application) : AndroidViewModel(application
             player2?.prepareAsync()
 
         } catch (ioException: IOException) {
-            Toast.makeText(appContext?.applicationContext, "Unable to connect to sound database." +
-                    " please check internet connection.", Toast.LENGTH_SHORT).show()
+            //Toast.makeText(appContext?.applicationContext, "Unable to connect to sound database." +
+            //        " please check internet connection.", Toast.LENGTH_SHORT).show()
             // maybe log exception later
         }
     }
