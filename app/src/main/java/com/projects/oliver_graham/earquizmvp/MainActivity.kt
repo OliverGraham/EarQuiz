@@ -10,6 +10,7 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.projects.oliver_graham.earquizmvp.navigation.MainNavigation
 import com.projects.oliver_graham.earquizmvp.quizpage.QuizPage
 import com.projects.oliver_graham.earquizmvp.quizpage.QuizPageViewModel
 import com.projects.oliver_graham.earquizmvp.ui.BackGroundImage
@@ -35,6 +37,7 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: QuizPageViewModel by viewModels()
 
+    @ExperimentalFoundationApi
     @ExperimentalAnimationApi
     @ExperimentalMaterialApi
     @RequiresApi(Build.VERSION_CODES.N)
@@ -49,16 +52,16 @@ class MainActivity : ComponentActivity() {
                 systemUiController.setStatusBarColor (
                     color = MaterialTheme.colors.primary
                 )
-
+                MainNavigation()
                 // will go to nav, in nav, viewModel can be given # of questions (later)
-                BackGroundImage {
+               /* BackGroundImage {
 
                     Surface(
                         color = MaterialTheme.colors.background.copy(alpha = 0.925f),
                     ) {
                         QuizPage(viewModel = viewModel)
                     }
-                }
+                }*/
 
             }
         }

@@ -1,14 +1,23 @@
 package com.projects.oliver_graham.earquizmvp.data
 
 object QuestionsRepo {
-    fun getRadioLabelsMap(): Map<String, String> = intervalLabels
     fun getIntervalsByHalfStep(): Map<Int, String> = intervalsByHalfStep
     fun getNotes(): List<Note> = notes
 
+    fun getIntervalQuizDescription(): List<String> = intervalQuizDescription
+    fun getEasyChordQuizDescription(): List<String> = easyChordQuizDescription
+    fun getMediumChordQuizDescription(): List<String> = mediumChordQuizDescription
+    fun getRandomQuizDescription(): List<String> = randomQuizDescription
+    fun getAllQuizDescriptions(): List<QuizDescription> = allDescriptions
+
+    fun getAllDescriptionsList(): List<List<String>> = allDescriptionsList
+
     fun getNoteNames(): List<String> = noteNames
     fun getNoteOctaves(): List<String> = noteOctaves
+    fun getRadioLabelsMap(): Map<String, String> = intervalLabels
 }
 
+// Note data, for querying notes and making random groups of notes
 private val intervalLabels: Map<String, String> = mapOf(
     "m2" to "Minor 2nd (half step)",
     "M2" to "Major 2nd (whole step)",
@@ -116,3 +125,55 @@ private val noteOctaves: List<String> = listOf(
     "5"
 )
 
+// HomeScreen Data
+private val intervalQuizDescription: List<String> = listOf(
+    "Try to guess the interval",
+    "Intervals will be ascending or descending, within an octave",
+    "There will be four possible choices; one correct",
+    "Try to guess in as few listens as possible",
+    "If you get stumped hints may appear"
+)
+
+private val easyChordQuizDescription: List<String> = listOf(
+    "Quiz coming soon!",
+    "Will contain triads of major and minor quality only",
+    "Chords could be inverted or in root position"
+)
+
+private val mediumChordQuizDescription: List<String> = listOf(
+    "Quiz coming soon!",
+    "Chords could contain 7ths",
+    "All types of chord qualities (half-diminished, minor-major, etc)",
+    "Chords could be inverted or in root position"
+)
+
+private val randomQuizDescription: List<String> = listOf(
+    "Quiz coming soon!",
+    "Will contain a mixture of intervals and chords"
+)
+
+private val allDescriptionsList: List<List<String>> = listOf(
+    intervalQuizDescription,
+    easyChordQuizDescription,
+    mediumChordQuizDescription,
+    randomQuizDescription
+)
+
+private val allDescriptions: List<QuizDescription> = listOf(
+    QuizDescription(
+        title = "Intervals",
+        descriptions = intervalQuizDescription
+    ),
+    QuizDescription(
+        title = "Easy Chords",
+        descriptions = easyChordQuizDescription
+    ),
+    QuizDescription(
+        title = "Medium Chords",
+        descriptions = mediumChordQuizDescription
+    ),
+    QuizDescription(
+        title = "Random Quiz",
+        descriptions = randomQuizDescription
+    )
+)
