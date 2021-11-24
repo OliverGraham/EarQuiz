@@ -25,7 +25,7 @@ fun MainNavigation(
 
     val navController = rememberAnimatedNavController()
     val homeScreenViewModel = remember { HomeScreenViewModel(navController) }
-    val quizPageViewModel = remember { QuizPageViewModel() }
+    val quizPageViewModel = remember { QuizPageViewModel(navController) }
 
     val animationDuration = 750
     val animationOffset = 500

@@ -33,28 +33,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
-// BEFORE MOVING ON, REFACTOR TO THIS STYLE:
-//
-// @Composable
-//fun TopLevelView(
-//    viewModel: ViewModel
-//) {
-//   LowerLevelView(
-//       onButtonClick = viewModel::onButtonClick
-//   )
-//}
-//
-//@Composable
-//fun LowerLevelView(
-//    onButtonClick: (params: Any) -> Unit
-//) {
-//    val params = // get your params somehow
-//    Button(onClick = onSomeActionTaken(params))
-//}
-
-// DID YOU DO IT? DO IT TOMORROW (HALLOWEEN)
-
-
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
 @Composable
@@ -214,13 +192,12 @@ fun QuizPage(viewModel: QuizPageViewModel) {
                 playSound = { viewModel.playSound(false) },
                 playButtonEnabled = viewModel.playButtonEnabled,
                 nextButtonEnabled = viewModel.nextButtonEnabled,
-                sheetMusicPainterResourceId1 = if (outcome) R.drawable.p5ae else R.drawable.p5ae,
-                //  sheetMusicPainterResourceId2 = R.drawable.d_sharp,
-                //    sheetMusicPainterResourceId3 = R.drawable.b_4,
+                sheetMusicPainterResourceId1 = viewModel.currentCorrectAnswer.value.clefsImage,
+                sheetMusicPainterResourceId2 = viewModel.currentCorrectAnswer.value.firstNote,
+                sheetMusicPainterResourceId3 = viewModel.currentCorrectAnswer.value.secondNote,
                 buttonText = "Next",
                 buttonIcon = { Icon(Icons.Default.ArrowForward, "") }
             )
-
         }
 
         if (showFinishedDialog) {
@@ -231,7 +208,8 @@ fun QuizPage(viewModel: QuizPageViewModel) {
                 incorrectText = "You got ${viewModel.incorrectUserAnswers.value} incorrect",
                 numberOfSoundsPlayedText =
                 "You pressed the interval button ${viewModel.numberOfIntervalTaps.value} times",
-                navButton1 = { /*TODO*/ },
+                onHomeButtonClick = { viewModel.navToHomeScreen() },  // can pass this too -> viewModel.resetQuizPage()
+                navButton1 = {  },
                 navButton2 = { /*TODO*/ }
             )
         }
@@ -248,6 +226,7 @@ fun FinishedDialog(
     correctText: String,
     incorrectText: String,
     numberOfSoundsPlayedText: String,
+    onHomeButtonClick: () -> Unit,
     navButton1: @Composable () -> Unit,
     navButton2: @Composable () -> Unit
 ) {
@@ -263,19 +242,14 @@ fun FinishedDialog(
         },
         text = {
             Column {
-                LargeText(
-                    text = correctText
-                )
-                Spacer(modifier = Modifier.padding(4.dp))
-                LargeText(
-                    text = incorrectText
-                )
-                Spacer(modifier = Modifier.padding(4.dp))
-                LargeText(
-                    text = numberOfSoundsPlayedText
-                )
+                LargeText(text = correctText)
                 Spacer(modifier = Modifier.padding(4.dp))
 
+                LargeText(text = incorrectText)
+                Spacer(modifier = Modifier.padding(4.dp))
+
+                LargeText(text = numberOfSoundsPlayedText)
+                Spacer(modifier = Modifier.padding(4.dp))
             }
         },
         buttons = {
@@ -283,10 +257,9 @@ fun FinishedDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(4.dp)
-
             ) {
                 MediumButton(
-                    onClick = {  },
+                    onClick = { onHomeButtonClick() },
                     //mutableEnabled = ,
                     content = {
                         LargeText(
@@ -328,9 +301,9 @@ fun AnswerDialog(
     playSound: (Boolean) -> Unit,
     playButtonEnabled: MutableState<Boolean>,
     nextButtonEnabled: MutableState<Boolean>,
-    sheetMusicPainterResourceId1: Int,    // for now
-    sheetMusicPainterResourceId2: Int = 0,    // for now
-    sheetMusicPainterResourceId3: Int = 0,    // for now
+    sheetMusicPainterResourceId1: Int,
+    sheetMusicPainterResourceId2: Int,
+    sheetMusicPainterResourceId3: Int,
     buttonText: String,
     buttonIcon: @Composable (() -> Unit)
 ) {
@@ -379,21 +352,21 @@ fun AnswerDialog(
                        )
                    }
 
-                   CenteredContentRow( // CHANG BACK TO ROW
+                   CenteredContentRow(
                        horizontalArrangement = Arrangement.Center
                    ) {
                        Image(
                            painter = painterResource(id = sheetMusicPainterResourceId1),
                            contentDescription = null
                        )
-/*                       Image(
+                       Image(
                            painter = painterResource(id = sheetMusicPainterResourceId2),
                            contentDescription = null
                        )
                        Image(
                            painter = painterResource(id = sheetMusicPainterResourceId3),
                            contentDescription = null
-                       )*/
+                       )
                    }
                }
         },        

@@ -21,16 +21,19 @@ import java.io.IOException
 import android.media.MediaPlayer.OnPreparedListener
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.navigation.NavController
+import com.projects.oliver_graham.earquizmvp.R
 import com.projects.oliver_graham.earquizmvp.data.Note
+import com.projects.oliver_graham.earquizmvp.navigation.Screen
 import java.lang.Math.abs
 import kotlin.random.Random
 
 
 // class QuizPageViewModel(application: Application) : AndroidViewModel(application) {
-class QuizPageViewModel() : ViewModel() {
+class QuizPageViewModel(private val navController: NavController) : ViewModel() {
 
     val quizName = "Intervals"          // get quiz name from nav?
-    val totalQuestions = 2              // could pass different amount later
+    val totalQuestions = 100              // could pass different amount later
     private val repo = QuestionsRepo
     private val intervalsByHalfStepMap = repo.getIntervalsByHalfStep()
     private val noteList = repo.getNotes()
@@ -46,8 +49,8 @@ class QuizPageViewModel() : ViewModel() {
     val nextButtonEnabled: MutableState<Boolean> = mutableStateOf(true)
     // val showAnswerDialog: MutableState<Boolean> = mutableStateOf(true)
 
-    val currentCorrectAnswer:
-          MutableState<QuizQuestion> = mutableStateOf(QuizQuestion(0, "", ""))  // was string
+    val currentCorrectAnswer: MutableState<QuizQuestion> = mutableStateOf(
+        QuizQuestion(id = 0, text = "", firstNote = 0, secondNote = 0))
 
     val radioGroup: SnapshotStateList<QuizQuestion> = mutableStateListOf()
 
@@ -76,12 +79,17 @@ class QuizPageViewModel() : ViewModel() {
 
         // three random intervals and one correct
         val twoCurrentNotes: List<Note> = createTwoRandomNotes()
-        val keyInterval: Int = kotlin.math.abs(twoCurrentNotes[0].id - twoCurrentNotes[1].id)
+        val noteOne = twoCurrentNotes[0]
+        val noteTwo = twoCurrentNotes[1]
+        val keyInterval: Int = kotlin.math.abs(noteOne.id - noteTwo.id)
         val randomIntervals: List<Int> = getRandomIntervals(keyInterval)
 
         currentCorrectAnswer.value = QuizQuestion(
             id = keyInterval,
-            text = intervalsByHalfStepMap.getValue(keyInterval)
+            text = intervalsByHalfStepMap.getValue(keyInterval),
+            clefsImage = R.drawable.treble_and_bass_clef,
+            firstNote = noteOne.imageId,
+            secondNote = noteTwo.imageId
         )
 
         randomIntervals.forEach { interval ->
@@ -93,26 +101,12 @@ class QuizPageViewModel() : ViewModel() {
         }
 
         setMediaPlayers(
-            noteOne = urlPath + twoCurrentNotes[0].soundPath,
-            noteTwo = urlPath + twoCurrentNotes[1].soundPath
+            noteOne = urlPath + noteOne.soundPath,
+            noteTwo = urlPath + noteTwo.soundPath
         )
         radioGroup.shuffle()
     }
 
-    private fun setMediaPlayers(noteOne: String, noteTwo: String) {
-        try {
-            player1?.setDataSource(noteOne)
-            player1?.prepareAsync()
-
-            player2?.setDataSource(noteTwo)
-            player2?.prepareAsync()
-
-        } catch (ioException: IOException) {
-            //Toast.makeText(appContext?.applicationContext, "Unable to connect to sound database." +
-            //        " please check internet connection.", Toast.LENGTH_SHORT).show()
-            // maybe log exception later
-        }
-    }
 
     fun determineOutcome() = currentCorrectAnswer.value.id == currentUserChoice.value
 
@@ -133,16 +127,48 @@ class QuizPageViewModel() : ViewModel() {
         playButtonEnabled.value = true
     }
 
+    fun navToHomeScreen() = navController.navigate(Screen.HomeScreen.route)
+
+    private fun setMediaPlayers(noteOne: String, noteTwo: String) {
+        try {
+            player1?.setDataSource(noteOne)
+            player1?.prepareAsync()
+
+            player2?.setDataSource(noteTwo)
+            player2?.prepareAsync()
+
+        } catch (ioException: IOException) {
+            //Toast.makeText(appContext?.applicationContext, "Unable to connect to sound database." +
+            //        " please check internet connection.", Toast.LENGTH_SHORT).show()
+            // maybe log exception later
+        }
+    }
+
+    // avoids mixing sharps and flats for the images
+    private fun accidentalPreference(accidental1: Int, accidental2: Int): Boolean {
+
+        // natural can mix with either/or (sometimes not ideal - might make better later)
+        if (accidental1 == 0 || accidental2 == 0)
+            return true
+
+        if (accidental1 == -1 && accidental2 == -1)
+            return true
+
+        if (accidental1 == 1 && accidental2 == 1)
+            return true
+
+        return false
+    }
 
     private fun createTwoRandomNotes(): List<Note> {
 
         val size = noteList.size
         val randomNoteOne = noteList[Random.nextInt(size)]
         val randomNoteTwo = noteList[Random.nextInt(size)]
-        val intervalDistance = kotlin.math.abs(randomNoteOne.id - randomNoteTwo.id)
 
-        if (intervalDistance in 1..12)
-            return listOf(randomNoteOne, randomNoteTwo)
+        if (accidentalPreference(randomNoteOne.accidental, randomNoteTwo.accidental))
+            if (kotlin.math.abs(randomNoteOne.id - randomNoteTwo.id) in 1..12)
+                return listOf(randomNoteOne, randomNoteTwo)
 
         return createTwoRandomNotes()
     }
@@ -161,6 +187,4 @@ class QuizPageViewModel() : ViewModel() {
     }
 
 }
-
-
 

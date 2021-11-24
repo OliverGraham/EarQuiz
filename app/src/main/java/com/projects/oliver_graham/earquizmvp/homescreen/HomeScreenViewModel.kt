@@ -15,6 +15,6 @@ class HomeScreenViewModel(private val navController: NavController) : ViewModel(
 
     fun onQuizButtonClick() {
         navController.navigate(Screen.QuizScreen.route)
-        val soy = ""
+
     }
 }
