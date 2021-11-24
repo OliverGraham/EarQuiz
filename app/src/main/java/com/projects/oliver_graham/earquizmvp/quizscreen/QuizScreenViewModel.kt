@@ -1,4 +1,5 @@
-package com.projects.oliver_graham.earquizmvp.quizpage
+package com.projects.oliver_graham.earquizmvp.quizscreen
+
 
 import android.app.Application
 import android.content.res.Resources
@@ -30,7 +31,7 @@ import kotlin.random.Random
 
 
 // class QuizPageViewModel(application: Application) : AndroidViewModel(application) {
-class QuizPageViewModel(private val navController: NavController) : ViewModel() {
+class QuizScreenViewModel(private val navController: NavController) : ViewModel() {
 
     val quizName = "Intervals"          // get quiz name from nav?
     val totalQuestions = 100              // could pass different amount later
@@ -96,7 +97,7 @@ class QuizPageViewModel(private val navController: NavController) : ViewModel() 
             radioGroup.add(QuizQuestion(
                 id = interval,
                 text = intervalsByHalfStepMap.getValue(interval)
-                )
+            )
             )
         }
 

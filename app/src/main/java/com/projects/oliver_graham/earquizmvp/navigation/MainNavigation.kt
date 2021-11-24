@@ -12,8 +12,8 @@ import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.projects.oliver_graham.earquizmvp.homescreen.HomeScreen
 import com.projects.oliver_graham.earquizmvp.homescreen.HomeScreenViewModel
-import com.projects.oliver_graham.earquizmvp.quizpage.QuizPage
-import com.projects.oliver_graham.earquizmvp.quizpage.QuizPageViewModel
+import com.projects.oliver_graham.earquizmvp.quizscreen.QuizScreen
+import com.projects.oliver_graham.earquizmvp.quizscreen.QuizScreenViewModel
 
 @ExperimentalMaterialApi
 @ExperimentalFoundationApi
@@ -25,7 +25,7 @@ fun MainNavigation(
 
     val navController = rememberAnimatedNavController()
     val homeScreenViewModel = remember { HomeScreenViewModel(navController) }
-    val quizPageViewModel = remember { QuizPageViewModel(navController) }
+    val quizScreenViewModel = remember { QuizScreenViewModel(navController) }
 
     val animationDuration = 750
     val animationOffset = 500
@@ -82,7 +82,7 @@ fun MainNavigation(
                 ) + fadeOut(animationSpec = tween(animationDuration))
             }
         ) {
-            QuizPage(viewModel = quizPageViewModel)
+            QuizScreen(viewModel = quizScreenViewModel)
         }
     }
 

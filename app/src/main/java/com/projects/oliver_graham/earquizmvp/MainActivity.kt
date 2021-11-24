@@ -28,14 +28,10 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.projects.oliver_graham.earquizmvp.navigation.MainNavigation
-import com.projects.oliver_graham.earquizmvp.quizpage.QuizPage
-import com.projects.oliver_graham.earquizmvp.quizpage.QuizPageViewModel
 import com.projects.oliver_graham.earquizmvp.ui.BackGroundImage
 import com.projects.oliver_graham.earquizmvp.ui.theme.EarQuizMVPTheme
 
 class MainActivity : ComponentActivity() {
-
-    private val viewModel: QuizPageViewModel by viewModels()
 
     @ExperimentalFoundationApi
     @ExperimentalAnimationApi
@@ -54,22 +50,18 @@ class MainActivity : ComponentActivity() {
                 )
                 MainNavigation()
                 // will go to nav, in nav, viewModel can be given # of questions (later)
-               /* BackGroundImage {
+/*                BackGroundImage {
 
                     Surface(
                         color = MaterialTheme.colors.background.copy(alpha = 0.925f),
                     ) {
-                        QuizPage(viewModel = viewModel)
+                        //QuizScreenViewModel
+                       // QuizPage(viewModel = viewModel)
+
                     }
-                }*/
+                } */
 
             }
         }
     }
 }
-
-
-/*Image(
-painter = painterResource(id = R.drawable.p5ae),
-contentDescription = null
-)*/

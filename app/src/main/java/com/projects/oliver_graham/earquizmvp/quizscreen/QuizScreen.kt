@@ -1,4 +1,5 @@
-package com.projects.oliver_graham.earquizmvp.quizpage
+package com.projects.oliver_graham.earquizmvp.quizscreen
+
 
 import android.graphics.Color.alpha
 import android.graphics.drawable.Icon
@@ -36,7 +37,7 @@ import kotlinx.coroutines.launch
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
 @Composable
-fun QuizPage(viewModel: QuizPageViewModel) {
+fun QuizScreen(viewModel: QuizScreenViewModel) {
 
     val scope = rememberCoroutineScope()
 
@@ -175,9 +176,9 @@ fun QuizPage(viewModel: QuizPageViewModel) {
                         viewModel.incorrectUserAnswers.value++
 
                     if (viewModel.questionNumber.value == viewModel.totalQuestions)
-                        // next dialog
-                        // write to database
-                        // there, go to HomePage
+                    // next dialog
+                    // write to database
+                    // there, go to HomePage
                         showFinishedDialog = !showFinishedDialog
                     else {
                         viewModel.questionNumber.value++
@@ -313,7 +314,7 @@ fun AnswerDialog(
             nextButtonEnabled.value = false
             dismissRequest()
 
-                           },
+        },
         title = {
             CenteredContentRow() {
                 LargeText(text = resultTitle)
@@ -324,52 +325,52 @@ fun AnswerDialog(
             }
         },
         text = {
-               Column {
-                   TextWithLeadingIcon(
-                       text = correctAnswerText,
-                       Icons.Default.Check,
-                       tint = Color(0xFF689F38)
-                   )
-                   if (incorrectAnswerText != null) {
-                       TextWithLeadingIcon(
-                           text = incorrectAnswerText,
-                           Icons.Default.Close,
-                           tint = scoreColor
-                       )
-                   }
+            Column {
+                TextWithLeadingIcon(
+                    text = correctAnswerText,
+                    Icons.Default.Check,
+                    tint = Color(0xFF689F38)
+                )
+                if (incorrectAnswerText != null) {
+                    TextWithLeadingIcon(
+                        text = incorrectAnswerText,
+                        Icons.Default.Close,
+                        tint = scoreColor
+                    )
+                }
 
-                   CenteredContentRow {
-                       MediumButton(
-                           onClick = { playSound(false) },
-                           mutableEnabled = playButtonEnabled,
-                           content = {
-                               LargeText(
-                                   text = "Play Interval",
-                                   fontSize = 16.sp
-                               )
-                               Icon(Icons.Rounded.PlayArrow, "")
-                           }
-                       )
-                   }
+                CenteredContentRow {
+                    MediumButton(
+                        onClick = { playSound(false) },
+                        mutableEnabled = playButtonEnabled,
+                        content = {
+                            LargeText(
+                                text = "Play Interval",
+                                fontSize = 16.sp
+                            )
+                            Icon(Icons.Rounded.PlayArrow, "")
+                        }
+                    )
+                }
 
-                   CenteredContentRow(
-                       horizontalArrangement = Arrangement.Center
-                   ) {
-                       Image(
-                           painter = painterResource(id = sheetMusicPainterResourceId1),
-                           contentDescription = null
-                       )
-                       Image(
-                           painter = painterResource(id = sheetMusicPainterResourceId2),
-                           contentDescription = null
-                       )
-                       Image(
-                           painter = painterResource(id = sheetMusicPainterResourceId3),
-                           contentDescription = null
-                       )
-                   }
-               }
-        },        
+                CenteredContentRow(
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = sheetMusicPainterResourceId1),
+                        contentDescription = null
+                    )
+                    Image(
+                        painter = painterResource(id = sheetMusicPainterResourceId2),
+                        contentDescription = null
+                    )
+                    Image(
+                        painter = painterResource(id = sheetMusicPainterResourceId3),
+                        contentDescription = null
+                    )
+                }
+            }
+        },
         buttons = {
             Row(
                 modifier = Modifier
