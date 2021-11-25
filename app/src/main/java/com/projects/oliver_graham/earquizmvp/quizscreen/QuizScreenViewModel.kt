@@ -23,6 +23,8 @@ import android.media.MediaPlayer.OnPreparedListener
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.projects.oliver_graham.earquizmvp.R
 import com.projects.oliver_graham.earquizmvp.data.Note
 import com.projects.oliver_graham.earquizmvp.navigation.Screen
@@ -31,10 +33,14 @@ import kotlin.random.Random
 
 
 // class QuizPageViewModel(application: Application) : AndroidViewModel(application) {
-class QuizScreenViewModel(private val navController: NavController) : ViewModel() {
+class QuizScreenViewModel(
+    private val navController: NavController,
+    private val auth: FirebaseAuth,
+    private val firestore: FirebaseFirestore
+    ) : ViewModel() {
 
     val quizName = "Intervals"          // get quiz name from nav?
-    val totalQuestions = 100              // could pass different amount later
+    val totalQuestions = 2              // could pass different amount later
     private val repo = QuestionsRepo
     private val intervalsByHalfStepMap = repo.getIntervalsByHalfStep()
     private val noteList = repo.getNotes()
@@ -128,7 +134,12 @@ class QuizScreenViewModel(private val navController: NavController) : ViewModel(
         playButtonEnabled.value = true
     }
 
-    fun navToHomeScreen() = navController.navigate(Screen.HomeScreen.route)
+    fun navToHomeScreen() {
+        navController.popBackStack()
+        navController.navigate(Screen.HomeScreen.route) {
+            launchSingleTop = true
+        }
+    }
 
     private fun setMediaPlayers(noteOne: String, noteTwo: String) {
         try {

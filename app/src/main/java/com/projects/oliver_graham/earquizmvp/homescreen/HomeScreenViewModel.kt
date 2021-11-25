@@ -14,7 +14,10 @@ class HomeScreenViewModel(private val navController: NavController) : ViewModel(
     val quizDescriptions: List<QuizDescription> = repo.getAllQuizDescriptions()
 
     fun onQuizButtonClick() {
-        navController.navigate(Screen.QuizScreen.route)
+
+        navController.navigate(Screen.QuizScreen.route) {
+            launchSingleTop = true
+        }
 
     }
 }

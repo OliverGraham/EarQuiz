@@ -1,12 +1,11 @@
 package com.projects.oliver_graham.earquizmvp.ui
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -22,14 +21,75 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.projects.oliver_graham.earquizmvp.R
+
+@Composable
+fun LogoHeader() {
+
+}
+
+@Composable
+fun EyeBallIcon(
+    onClick: () -> Unit,
+    clicked: Boolean
+) {
+    // clickable icon
+    Box(modifier = Modifier.clickable(onClick = { onClick() })
+    ) { ->
+        if (clicked)
+            Image(
+                painterResource(id = R.drawable.open_eye),
+                contentDescription = "",
+                modifier = Modifier.fillMaxSize(0.075f)
+            )
+        else
+            Image(
+                painterResource(id = R.drawable.closed_eye),
+                contentDescription = "",
+                modifier = Modifier.fillMaxSize(0.075f)
+            )
+    }
+}
+
+@Composable
+fun GenericTextField(
+    modifier: Modifier = Modifier,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    text: String,
+    textStyle: TextStyle = LocalTextStyle.current,
+    label: String,
+    readOnly: Boolean = false,
+    enabled: Boolean = true,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    interactionSource: MutableInteractionSource = MutableInteractionSource(),
+    onTextChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        modifier = modifier,
+        keyboardOptions = keyboardOptions,
+        visualTransformation = visualTransformation,
+        value = text,
+        onValueChange = onTextChange,
+        textStyle = textStyle,
+        label = { Text(label) },
+        leadingIcon = leadingIcon,
+        trailingIcon = trailingIcon,
+        interactionSource = interactionSource
+    )
+}
+
+
 
 @Composable
 fun CircularIconButton(
@@ -190,6 +250,7 @@ fun TextAndRadio(
 @Composable
 fun CenteredContentRow(
     modifier: Modifier = Modifier,
+    padding: Dp = 16.dp,
     verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
     horizontalArrangement: Arrangement.HorizontalOrVertical = Arrangement.SpaceEvenly,
     rowContent: @Composable RowScope.() -> Unit
@@ -197,13 +258,12 @@ fun CenteredContentRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(padding),
         verticalAlignment = verticalAlignment,
         horizontalArrangement = horizontalArrangement,
         content = rowContent
     )
 }
-
 
 
 @Composable

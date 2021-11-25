@@ -27,6 +27,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.projects.oliver_graham.earquizmvp.authentication.LoginScreen
+import com.projects.oliver_graham.earquizmvp.authentication.LoginScreenViewModel
 import com.projects.oliver_graham.earquizmvp.navigation.MainNavigation
 import com.projects.oliver_graham.earquizmvp.ui.BackGroundImage
 import com.projects.oliver_graham.earquizmvp.ui.theme.EarQuizMVPTheme
@@ -48,18 +50,18 @@ class MainActivity : ComponentActivity() {
                 systemUiController.setStatusBarColor (
                     color = MaterialTheme.colors.primary
                 )
+                // TODO: Add Logo header
+                // TODO: Do I still want the user to be able to determine # of questions?
+                // TODO: Same background image for entire app? Different images for different screens?
                 MainNavigation()
-                // will go to nav, in nav, viewModel can be given # of questions (later)
-/*                BackGroundImage {
+
+                /*BackGroundImage {
 
                     Surface(
                         color = MaterialTheme.colors.background.copy(alpha = 0.925f),
                     ) {
-                        //QuizScreenViewModel
-                       // QuizPage(viewModel = viewModel)
-
                     }
-                } */
+                }*/
 
             }
         }
