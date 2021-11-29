@@ -29,7 +29,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.projects.oliver_graham.earquizmvp.R
+import com.projects.oliver_graham.earquizmvp.data.QuizQuestion
 import com.projects.oliver_graham.earquizmvp.ui.*
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -45,82 +47,24 @@ fun QuizScreen(viewModel: QuizScreenViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-    ) {
-        // top row
-        Row(
-
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                LargeText(
-                    text = viewModel.quizName,
-                    fontSize = 32.sp
-                )
-                Spacer(modifier = Modifier.padding(4.dp))
-
-                LargeText(
-                    text = "${viewModel.questionNumber.value}/${viewModel.totalQuestions}",
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.padding(4.dp))
-
-                LargeText(
-                    text = "+ ${viewModel.correctUserAnswers.value}",
-                    color = Color(0xFF689F38)   // regular green too bright
-                )
-                Spacer(modifier = Modifier.padding(4.dp))
-
-                LargeText(
-                    text = "- ${viewModel.incorrectUserAnswers.value}",
-                    color = Color.Red
-                )
-                Spacer(modifier = Modifier.padding(4.dp))
-
-                Icon(
-                    Icons.Rounded.Settings,
-                    "",
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-        }
+    ) { ->
+        TopRow(
+            quizName = viewModel.quizName,
+            questionNumber = viewModel.questionNumber.value,
+            totalQuestions = viewModel.totalQuestions,
+            correctUserAnswers = viewModel.correctUserAnswers.value,
+            incorrectUserAnswers = viewModel.incorrectUserAnswers.value
+        )
         Divider(
             modifier = Modifier.padding(16.dp),
             color = MaterialTheme.colors.primaryVariant
         )
-
-        // Play interval button and count
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            LargeButton(
-                onClick = { viewModel.playSound() },
-                mutableEnabled = viewModel.playButtonEnabled,
-                content = {
-                    LargeText(
-                        text = "Play Interval",
-                        fontSize = 20.sp
-                    )
-                    Icon(Icons.Rounded.PlayArrow, "")
-                }
-            )
-            LargeText(
-                text = viewModel.numberOfIntervalTaps.value.toString(),
-                color = if (isSystemInDarkTheme())
-                    MaterialTheme.colors.primary else MaterialTheme.colors.onPrimary,
-                fontSize = 36.sp
-            )
-        }
-
-        Column(modifier = Modifier.padding(16.dp)) {
+        PlayIntervalButtonRow(
+            playSound = { viewModel.playSound() },
+            playButtonEnabled = viewModel.playButtonEnabled,
+            numberOfIntervalTaps = viewModel.numberOfIntervalTaps.value
+        )
+        Column(modifier = Modifier.padding(16.dp)) { ->
             for (quizQuestion in viewModel.radioGroup) {
                 TextAndRadio(
                     text = quizQuestion.text,
@@ -131,110 +75,211 @@ fun QuizScreen(viewModel: QuizScreenViewModel) {
             }
         }
 
-        var showDialog by remember { mutableStateOf(false) }
-        CenteredContentRow {
+        CenteredContentRow { ->
             LargeButton(
-                onClick = { showDialog = !showDialog },
+                onClick = { viewModel.showAnswerDialog.value = !viewModel.showAnswerDialog.value },
                 mutableEnabled = viewModel.submitButtonEnabled
-            ) {
-                LargeText(
-                    text = "Submit Answer",
-                    fontSize = 20.sp
-                )
-                Icon(Icons.Rounded.KeyboardArrowUp, "")
+            ) { ->
+                LargeText(text = "Submit Answer", fontSize = 20.sp)
+                Icon(Icons.Rounded.KeyboardArrowUp, contentDescription = null)
             }
         }
-        var showFinishedDialog by remember { mutableStateOf(false) }
-        if (showDialog) {
 
-            val outcome = viewModel.determineOutcome()
-
-            var userChoiceText: String? = null
-            val title: String
-            val scoreSign: String
-            val scoreColor: Color
-
-            if (outcome) {
-                title = "Correct"
-                scoreSign = "+"
-                scoreColor = Color(0xFF689F38)
-            } else {
-                title = "Incorrect"
-                scoreSign = "-"
-                scoreColor = Color.Red
-                userChoiceText = viewModel.convertUserChoiceToText()
-            }
-
-            AnswerDialog(
-                dismissRequest = {
-
-                    showDialog = !showDialog
-
-                    if (outcome)
-                        viewModel.correctUserAnswers.value++
-                    else
-                        viewModel.incorrectUserAnswers.value++
-
-                    if (viewModel.questionNumber.value == viewModel.totalQuestions)
-                    // next dialog
-                    // write to database
-                    // there, go to HomePage
-                        showFinishedDialog = !showFinishedDialog
-                    else {
-                        viewModel.questionNumber.value++
-                        viewModel.resetQuizPage()
-                    }
-                },
-                resultTitle = title,
-                scoreSign = scoreSign,
-                scoreColor = scoreColor,
-                correctAnswerText = viewModel.currentCorrectAnswer.value.text,
-                incorrectAnswerText = userChoiceText,
-                playSound = { viewModel.playSound(false) },
+        if (viewModel.showAnswerDialog.value) {
+            val outcome = remember { viewModel.determineOutcome() }
+            HandleAnswerDialog(
+                outcome = outcome,
+                convertUserChoiceToText = { viewModel.convertUserChoiceToText() },
+                dismissRequest = { viewModel.answerDialogDismissRequest(outcome) },
+                playSound = { viewModel.playSound(countTowardScore = false) },
                 playButtonEnabled = viewModel.playButtonEnabled,
                 nextButtonEnabled = viewModel.nextButtonEnabled,
-                sheetMusicPainterResourceId1 = viewModel.currentCorrectAnswer.value.clefsImage,
-                sheetMusicPainterResourceId2 = viewModel.currentCorrectAnswer.value.firstNote,
-                sheetMusicPainterResourceId3 = viewModel.currentCorrectAnswer.value.secondNote,
-                buttonText = "Next",
-                buttonIcon = { Icon(Icons.Default.ArrowForward, "") }
+                currentCorrectAnswer = viewModel.currentCorrectAnswer.value
             )
         }
 
-        if (showFinishedDialog) {
+        if (viewModel.showFinishedDialog.value) {
             FinishedDialog(
-                dismissRequest = { /*TODO*/ },
+                dismissRequest = { viewModel.navToHomeScreen() },
                 title = "Finished! ${viewModel.questionNumber.value}/${viewModel.totalQuestions}",
                 correctText = "You got ${viewModel.correctUserAnswers.value} correct",
                 incorrectText = "You got ${viewModel.incorrectUserAnswers.value} incorrect",
                 numberOfSoundsPlayedText =
                 "You pressed the interval button ${viewModel.numberOfIntervalTaps.value} times",
                 onHomeButtonClick = { viewModel.navToHomeScreen() },  // can pass this too -> viewModel.resetQuizPage()
-                navButton1 = {  },
-                navButton2 = { /*TODO*/ }
+                onLeaderboardButtonClick = { viewModel.navToLeaderboardScreen() },
+                navButton1 = { viewModel.navToHomeScreen() },
+                navButton2 = { viewModel.navToLeaderboardScreen() }
             )
         }
-
 
     } // end of column
 }
 
+@Composable
+private fun HandleAnswerDialog(
+    outcome: Boolean,
+    convertUserChoiceToText: () -> String,
+    dismissRequest: (Boolean) -> Unit,
+    playSound: (Boolean) -> Job,
+    playButtonEnabled: MutableState<Boolean>,
+    nextButtonEnabled: MutableState<Boolean>,
+    currentCorrectAnswer: QuizQuestion
+) {
+    var userChoiceText: String? = null
+    val title: String
+    val scoreSign: String
+    val scoreColor: Color
+
+    if (outcome) {
+        title = "Correct"
+        scoreSign = "+"
+        scoreColor = Color(0xFF689F38)
+    } else {
+        title = "Incorrect"
+        scoreSign = "-"
+        scoreColor = Color.Red
+        userChoiceText = convertUserChoiceToText()
+    }
+
+    AnswerDialog(
+        dismissRequest = { dismissRequest(outcome) },
+        resultTitle = title,
+        scoreSign = scoreSign,
+        scoreColor = scoreColor,
+        correctAnswerText = currentCorrectAnswer.text,
+        incorrectAnswerText = userChoiceText,
+        playSound = { playSound(false) },
+        playButtonEnabled = playButtonEnabled,
+        nextButtonEnabled = nextButtonEnabled,
+        clefsResourceId = currentCorrectAnswer.clefsImage,
+        noteOneResourceId = currentCorrectAnswer.firstNote,
+        noteTwoResourceId = currentCorrectAnswer.secondNote,
+        buttonText = "Next",
+        buttonIcon = { Icon(Icons.Default.ArrowForward, contentDescription = "") }
+    )
+}
+
+// Strictly for right and wrong answers in this quiz page
+@Composable
+private fun AnswerDialog(
+    dismissRequest: () -> Unit,
+    resultTitle: String,
+    scoreSign: String,
+    scoreColor: Color,
+    correctAnswerText: String,
+    incorrectAnswerText: String?,
+    playSound: (Boolean) -> Unit,
+    playButtonEnabled: MutableState<Boolean>,
+    nextButtonEnabled: MutableState<Boolean>,
+    clefsResourceId: Int,
+    noteOneResourceId: Int,
+    noteTwoResourceId: Int,
+    buttonText: String,
+    buttonIcon: @Composable (() -> Unit)
+) {
+    nextButtonEnabled.value = true
+
+    AlertDialog(
+        onDismissRequest = {
+            nextButtonEnabled.value = false
+            dismissRequest()
+        },
+        title = {
+            CenteredContentRow { ->
+                LargeText(text = resultTitle)
+                LargeText(
+                    text = "${scoreSign}1",
+                    color = scoreColor
+                )
+            }
+        },
+        text = {
+            Column { ->
+                TextWithLeadingIcon(
+                    text = correctAnswerText,
+                    Icons.Default.Check,
+                    tint = Color(0xFF689F38)
+                )
+                if (incorrectAnswerText != null) {
+                    TextWithLeadingIcon(
+                        text = incorrectAnswerText,
+                        Icons.Default.Close,
+                        tint = scoreColor
+                    )
+                }
+
+                CenteredContentRow { ->
+                    MediumButton(
+                        onClick = { playSound(false) },
+                        mutableEnabled = playButtonEnabled,
+                        content = { ->
+                            LargeText(
+                                text = "Play Interval",
+                                fontSize = 16.sp
+                            )
+                            Icon(Icons.Rounded.PlayArrow, contentDescription = "")
+                        }
+                    )
+                }
+
+                CenteredContentRow(
+                    horizontalArrangement = Arrangement.Center
+                ) { ->
+                    Image(
+                        painter = painterResource(id = clefsResourceId),
+                        contentDescription = null
+                    )
+                    Image(
+                        painter = painterResource(id = noteOneResourceId),
+                        contentDescription = null
+                    )
+                    Image(
+                        painter = painterResource(id = noteTwoResourceId),
+                        contentDescription = null
+                    )
+                }
+            }
+        },
+        buttons = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.End,
+            ) { ->
+                MediumButton(
+                    onClick = {
+                        nextButtonEnabled.value = false
+                        dismissRequest()
+                    },
+                    mutableEnabled = nextButtonEnabled
+                ) { ->
+                    LargeText(text = buttonText)
+                    buttonIcon()
+                }
+            }
+        }
+    )
+}
+
 
 @Composable
-fun FinishedDialog(
+private fun FinishedDialog(
     dismissRequest: () -> Unit,
     title: String,
     correctText: String,
     incorrectText: String,
     numberOfSoundsPlayedText: String,
     onHomeButtonClick: () -> Unit,
+    onLeaderboardButtonClick: () -> Unit,
     navButton1: @Composable () -> Unit,
     navButton2: @Composable () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = { dismissRequest() },
         title = {
-            CenteredContentRow {
+            CenteredContentRow { ->
                 LargeText(
                     text = title,
                     fontSize = 28.sp
@@ -242,7 +287,7 @@ fun FinishedDialog(
             }
         },
         text = {
-            Column {
+            Column { ->
                 LargeText(text = correctText)
                 Spacer(modifier = Modifier.padding(4.dp))
 
@@ -258,11 +303,11 @@ fun FinishedDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(4.dp)
-            ) {
+            ) { ->
                 MediumButton(
                     onClick = { onHomeButtonClick() },
                     //mutableEnabled = ,
-                    content = {
+                    content = { ->
                         LargeText(
                             text = "Home",
                             fontSize = 12.sp
@@ -272,9 +317,9 @@ fun FinishedDialog(
                 )
                 Spacer(modifier = Modifier.padding(4.dp))
                 MediumButton(
-                    onClick = {  },
+                    onClick = { onLeaderboardButtonClick() },
                     //mutableEnabled = ,
-                    content = {
+                    content = { ->
                         LargeText(
                             text = "Leaderboard",
                             fontSize = 12.sp
@@ -285,145 +330,88 @@ fun FinishedDialog(
             }
         }
     )
-
-
-
 }
 
-// Strictly for right and wrong answers in this quiz page
 @Composable
-fun AnswerDialog(
-    dismissRequest: () -> Unit,
-    resultTitle: String,
-    scoreSign: String,
-    scoreColor: Color,
-    correctAnswerText: String,
-    incorrectAnswerText: String?,
-    playSound: (Boolean) -> Unit,
-    playButtonEnabled: MutableState<Boolean>,
-    nextButtonEnabled: MutableState<Boolean>,
-    sheetMusicPainterResourceId1: Int,
-    sheetMusicPainterResourceId2: Int,
-    sheetMusicPainterResourceId3: Int,
-    buttonText: String,
-    buttonIcon: @Composable (() -> Unit)
+private fun TopRow(
+    quizName: String,
+    questionNumber: Int,
+    totalQuestions: Int,
+    correctUserAnswers: Int,
+    incorrectUserAnswers: Int
 ) {
-    nextButtonEnabled.value = true
-    AlertDialog(
-        onDismissRequest = {
-            nextButtonEnabled.value = false
-            dismissRequest()
+    Row { ->
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) { ->
+            LargeText(
+                text = quizName,
+                fontSize = 32.sp
+            )
+            Spacer(modifier = Modifier.padding(4.dp))
 
-        },
-        title = {
-            CenteredContentRow() {
-                LargeText(text = resultTitle)
-                LargeText(
-                    text = "${scoreSign}1",
-                    color = scoreColor
-                )
-            }
-        },
-        text = {
-            Column {
-                TextWithLeadingIcon(
-                    text = correctAnswerText,
-                    Icons.Default.Check,
-                    tint = Color(0xFF689F38)
-                )
-                if (incorrectAnswerText != null) {
-                    TextWithLeadingIcon(
-                        text = incorrectAnswerText,
-                        Icons.Default.Close,
-                        tint = scoreColor
-                    )
-                }
+            LargeText(
+                text = "$questionNumber/$totalQuestions",
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.padding(4.dp))
 
-                CenteredContentRow {
-                    MediumButton(
-                        onClick = { playSound(false) },
-                        mutableEnabled = playButtonEnabled,
-                        content = {
-                            LargeText(
-                                text = "Play Interval",
-                                fontSize = 16.sp
-                            )
-                            Icon(Icons.Rounded.PlayArrow, "")
-                        }
-                    )
-                }
+            LargeText(
+                text = "+ $correctUserAnswers",
+                color = Color(0xFF689F38)   // regular green too bright
+            )
+            Spacer(modifier = Modifier.padding(4.dp))
 
-                CenteredContentRow(
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = sheetMusicPainterResourceId1),
-                        contentDescription = null
-                    )
-                    Image(
-                        painter = painterResource(id = sheetMusicPainterResourceId2),
-                        contentDescription = null
-                    )
-                    Image(
-                        painter = painterResource(id = sheetMusicPainterResourceId3),
-                        contentDescription = null
-                    )
-                }
-            }
-        },
-        buttons = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.End,
-            ) {
+            LargeText(
+                text = "- $incorrectUserAnswers",
+                color = Color.Red
+            )
+            Spacer(modifier = Modifier.padding(4.dp))
 
-                MediumButton(
-                    onClick = {
-                        nextButtonEnabled.value = false
-                        dismissRequest()
-
-                    }
-
-                    ,
-                    mutableEnabled = nextButtonEnabled
-                ) {
-                    LargeText(text = buttonText)
-                    buttonIcon()
-                }
-            }
+            Icon(
+                Icons.Rounded.Settings,
+                contentDescription = "",
+                modifier = Modifier.size(32.dp)
+            )
         }
-    )
+    }
 }
 
-
-
-
-/*@Composable
-fun PlaySoundButton(
+@Composable
+private fun PlayIntervalButtonRow(
     playSound: () -> Unit,
     playButtonEnabled: MutableState<Boolean>,
-    buttonText: String,
-
+    numberOfIntervalTaps: Int
 ) {
-    val scope = rememberCoroutineScope()
-    LargeButton(
-        onClick = {
-            scope.launch {
-                playSound()
-                playButtonEnabled.value = false
-                delay(4500)
-                playButtonEnabled.value = true
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        LargeButton(
+            onClick = { playSound() },
+            mutableEnabled = playButtonEnabled,
+            content = {
+                LargeText(
+                    text = "Play Interval",
+                    fontSize = 20.sp
+                )
+                Icon(Icons.Rounded.PlayArrow, "")
             }
-        },
-        mutableEnabled = playButtonEnabled,
-        content = {
-            LargeText(
-                text = buttonText,
-                fontSize = 20.sp
-            )
-            Icon(Icons.Rounded.PlayArrow, "")
-        }
-    )
-}*/
+        )
+        LargeText(
+            text = numberOfIntervalTaps.toString(),
+            color = if (isSystemInDarkTheme())
+                MaterialTheme.colors.primary else MaterialTheme.colors.onPrimary,
+            fontSize = 36.sp
+        )
+    }
+}
+
+

@@ -1,42 +1,30 @@
 package com.projects.oliver_graham.earquizmvp.quizscreen
 
 
-import android.app.Application
-import android.content.res.Resources
+
 import android.media.MediaPlayer
-import android.net.Uri
-import android.widget.Toast
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.projects.oliver_graham.earquizmvp.data.QuestionsRepo
-import com.projects.oliver_graham.earquizmvp.data.QuizQuestion
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.IOException
-import android.media.MediaPlayer.OnPreparedListener
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.projects.oliver_graham.earquizmvp.R
-import com.projects.oliver_graham.earquizmvp.data.Note
+import com.projects.oliver_graham.earquizmvp.data.*
+import com.projects.oliver_graham.earquizmvp.navigation.NavigationController
 import com.projects.oliver_graham.earquizmvp.navigation.Screen
-import java.lang.Math.abs
+
 import kotlin.random.Random
 
 
 // class QuizPageViewModel(application: Application) : AndroidViewModel(application) {
 class QuizScreenViewModel(
-    private val navController: NavController,
-    private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
+    private val navController: NavigationController,
+    private val firebaseController: FirebaseController
     ) : ViewModel() {
 
     val quizName = "Intervals"          // get quiz name from nav?
@@ -54,7 +42,8 @@ class QuizScreenViewModel(
     val submitButtonEnabled: MutableState<Boolean> = mutableStateOf(false)
     val playButtonEnabled: MutableState<Boolean> = mutableStateOf(true)
     val nextButtonEnabled: MutableState<Boolean> = mutableStateOf(true)
-    // val showAnswerDialog: MutableState<Boolean> = mutableStateOf(true)
+    val showAnswerDialog: MutableState<Boolean> = mutableStateOf(false)
+    val showFinishedDialog: MutableState<Boolean> = mutableStateOf(false)
 
     val currentCorrectAnswer: MutableState<QuizQuestion> = mutableStateOf(
         QuizQuestion(id = 0, text = "", firstNote = 0, secondNote = 0))
@@ -66,8 +55,7 @@ class QuizScreenViewModel(
     var player2: MediaPlayer? = null
 
     init {
-        viewModelScope.launch {
-
+        viewModelScope.launch { ->
             player1 = MediaPlayer()
             player2 = MediaPlayer()
             resetQuizPage()
@@ -103,7 +91,7 @@ class QuizScreenViewModel(
             radioGroup.add(QuizQuestion(
                 id = interval,
                 text = intervalsByHalfStepMap.getValue(interval)
-            )
+                )
             )
         }
 
@@ -119,7 +107,7 @@ class QuizScreenViewModel(
 
     fun convertUserChoiceToText() = intervalsByHalfStepMap.getValue(currentUserChoice.value)
 
-    fun playSound(countTowardScore: Boolean = true) = viewModelScope.launch {
+    fun playSound(countTowardScore: Boolean = true) = viewModelScope.launch { ->
 
         playButtonEnabled.value = false
 
@@ -134,11 +122,38 @@ class QuizScreenViewModel(
         playButtonEnabled.value = true
     }
 
-    fun navToHomeScreen() {
-        navController.popBackStack()
-        navController.navigate(Screen.HomeScreen.route) {
-            launchSingleTop = true
+    fun answerDialogDismissRequest(outcome: Boolean) {
+        showAnswerDialog.value = !showAnswerDialog.value
+
+        if (outcome)
+            correctUserAnswers.value++
+        else
+           incorrectUserAnswers.value++
+
+        // if end of quiz, open next dialog
+        if (questionNumber.value == totalQuestions) {
+            saveResultsToFirestore()
+            // need to reset quizpage() ?
+            showFinishedDialog.value = !showFinishedDialog.value
+        } else {
+            questionNumber.value++
+            resetQuizPage()
         }
+    }
+
+    fun navToHomeScreen() = navController.navHomeScreenPopAndTop()
+
+    fun navToLeaderboardScreen() = navController.navLeaderboardScreenPopAndTop()
+
+    // later, could save results of individual quizzes. For now, just save right and wrong answers
+    private fun saveResultsToFirestore() = viewModelScope.launch { ->
+
+        val currentUser = firebaseController.getUserDocument()
+        val updatedUser = currentUser?.copy(
+            correctAnswers = currentUser.correctAnswers + correctUserAnswers.value,
+            incorrectAnswers = currentUser.incorrectAnswers + incorrectUserAnswers.value
+        )
+        firebaseController.saveUserDocument(updatedUser)
     }
 
     private fun setMediaPlayers(noteOne: String, noteTwo: String) {
@@ -149,6 +164,7 @@ class QuizScreenViewModel(
             player2?.setDataSource(noteTwo)
             player2?.prepareAsync()
 
+            // doesn't catch, even with error
         } catch (ioException: IOException) {
             //Toast.makeText(appContext?.applicationContext, "Unable to connect to sound database." +
             //        " please check internet connection.", Toast.LENGTH_SHORT).show()

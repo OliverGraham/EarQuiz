@@ -51,7 +51,7 @@ private val intervalsByHalfStep: Map<Int, String> = mapOf(
 )
 
 private val notes: List<Note> = listOf(
-    Note(id = 40, name = "c3", accidental = 0, soundPath = "C3", imageId = R.drawable.c3),
+    Note(id = 40, name = "c3", accidental = 0, soundPath = "C3", imageId = R.drawable.a3),
     Note(id = 41, name = "c_sharp3", accidental = 1, soundPath = "C%233", imageId = R.drawable.c_sharp3),
     Note(id = 41, name = "d_flat3", accidental = -1, soundPath = "C%233", imageId = R.drawable.d_flat3),
     Note(id = 42, name = "d3", accidental = 0, soundPath = "D3", imageId = R.drawable.d3),

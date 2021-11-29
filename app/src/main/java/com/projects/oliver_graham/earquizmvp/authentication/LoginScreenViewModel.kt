@@ -5,14 +5,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.google.firebase.auth.FirebaseAuth
+import com.projects.oliver_graham.earquizmvp.data.FirebaseController
+import com.projects.oliver_graham.earquizmvp.navigation.NavigationController
 import com.projects.oliver_graham.earquizmvp.navigation.Screen
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LoginScreenViewModel(
-    private val navController: NavController,
-    private val auth: FirebaseAuth
+    private val navController: NavigationController,
+    private val firebaseController: FirebaseController
     ): ViewModel() {
 
     val emailTextField: MutableState<String> = mutableStateOf("")
@@ -26,28 +28,62 @@ class LoginScreenViewModel(
 
     fun onLoginButtonClick() = viewModelScope.launch { ->
 
-        auth.signInWithEmailAndPassword(emailTextField.value, passwordTextField.value)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    navController.popBackStack()
-                    navController.navigate(Screen.HomeScreen.route)
-                } else {
-                    // do something?
-                }
-            }
+        withContext(Dispatchers.IO) { ->
+            firebaseController.signInWithEmailAndPassword(
+                emailTextField.value,
+                passwordTextField.value
+            )
+            if (firebaseController.isUserLoggedIn())
+                navController.navHomeScreenPopBackstack()
 
+            // else
+            // TODO: Display error message (Toast?)
+        }
     }
 
     // Google and Facebook verify?
 
     // go to account creation screen
     fun createButtonClick() {
-        navController.navigate(Screen.CreateAccountScreen.route)
+        navController.navCreateAccountScreen()
     }
 
-    // skip
     fun onSkipButtonClick() {
-        navController.popBackStack()
-        navController.navigate(Screen.HomeScreen.route)
+        navController.navHomeScreenPopBackstack()
     }
 }
+
+/* // TODO: Error validation for textfields
+var text by rememberSaveable { mutableStateOf("") }
+var isError by rememberSaveable { mutableStateOf(false) }
+
+fun validate(text: String) {
+    isError = /* .... */
+}
+
+
+
+Column {
+    TextField(
+        value = text,
+        onValueChange = {
+            text = it
+            isError = false
+        },
+        trailingIcon = {
+            if (isError)
+                Icon(Icons.Filled.Error,"error", tint = MaterialTheme.colors.error)
+        },
+        singleLine = true,
+        isError = isError,
+        keyboardActions = KeyboardActions { validate(text) },
+    )
+    if (isError) {
+        Text(
+            text = "Error message",
+            color = MaterialTheme.colors.error,
+            style = MaterialTheme.typography.caption,
+            modifier = Modifier.padding(start = 16.dp)
+        )
+    }
+}*/

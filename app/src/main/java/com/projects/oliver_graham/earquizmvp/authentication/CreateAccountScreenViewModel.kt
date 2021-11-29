@@ -7,14 +7,15 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.projects.oliver_graham.earquizmvp.data.FirebaseController
 import com.projects.oliver_graham.earquizmvp.data.User
+import com.projects.oliver_graham.earquizmvp.navigation.NavigationController
 import com.projects.oliver_graham.earquizmvp.navigation.Screen
 import kotlinx.coroutines.launch
 
 class CreateAccountScreenViewModel(
-    private val navController: NavController,
-    private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore   // create user when account is created - for leaderboard
+    private val navController: NavigationController,
+    private val firebaseController: FirebaseController
     ): ViewModel() {
 
     val usernameTextField: MutableState<String> = mutableStateOf("")
@@ -35,30 +36,10 @@ class CreateAccountScreenViewModel(
 
     // Create user in authentication and create document in database
     fun createAccountButtonClick() = viewModelScope.launch { ->
-        auth.createUserWithEmailAndPassword(emailTextField.value, passwordTextField.value)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-
-                    // auth has a currentUser, it just can't believe it
-                    firestore.collection("users").document(auth.currentUser!!.uid)
-                        .set(User(
-                                uid = auth.currentUser!!.uid,
-                                userName = usernameTextField.value,
-                                email = emailTextField.value
-                            )
-                        )
-
-                    // TODO: add user to document in firestore
-                    navController.navigate(Screen.HomeScreen.route) { ->
-
-                        // so back button doesn't go back to login flow
-                        popUpTo(Screen.LoginScreen.route) { inclusive = true }
-                    }
-                } else {
-                    // do something?
-                }
-            }
+        firebaseController.createUserWithEmailAndPassword(
+            usernameTextField.value, emailTextField.value, passwordTextField.value
+        )
+        navController.navHomeScreenNoBack()
     }
-
 
 }
