@@ -1,5 +1,6 @@
 package com.projects.oliver_graham.earquizmvp.navigation
 
+import android.content.Context
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -32,15 +33,17 @@ import com.projects.oliver_graham.earquizmvp.quizscreen.QuizScreenViewModel
 @ExperimentalAnimationApi
 @Composable
 fun MainNavigation(
-
+    context: Context
 ) {
     val navController = rememberAnimatedNavController() // passed in from MainActivity?
     val navWrapper = remember { NavigationController(navController) }
-    val firebaseController = remember { FirebaseController(navWrapper) }
+    val firebaseController = remember { FirebaseController(navWrapper, context) }
 
     // FOR TESTING ONLY
-    if (firebaseController.isUserLoggedIn())
-        firebaseController.logOutUser()
+    if (firebaseController.isUserLoggedIn()) {
+        firebaseController.logOutUserFromFirebase()
+        firebaseController.logOutUserFromGoogle()
+    }
 
     val loginScreenViewModel = remember { LoginScreenViewModel(navWrapper, firebaseController) }
     val createAccountScreenViewModel =

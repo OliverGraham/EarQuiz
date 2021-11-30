@@ -1,6 +1,9 @@
 package com.projects.oliver_graham.earquizmvp.ui
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -9,16 +12,16 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -35,6 +38,34 @@ import com.projects.oliver_graham.earquizmvp.R
 @Composable
 fun LogoHeader() {
 
+}
+
+@Composable
+fun AnimateButtonPress() {
+    val isPressed = remember { mutableStateOf(value = false) }
+    val transition: Transition<Boolean> = updateTransition(targetState = isPressed.value, label = "")
+    // Defines a float animation to scale x,y
+    val scaleX: Float by transition.animateFloat(
+        transitionSpec = { spring(stiffness = 50f) }, label = ""
+    ) { state ->
+        if (state == isPressed.value) 0.90f else 1f
+    }
+
+    val scaleY: Float by transition.animateFloat(
+        transitionSpec = { spring(stiffness = 50f) }, label = ""
+    ) { state ->
+        if (state == isPressed.value) 0.90f else 1f
+    }
+
+    val modifier = Modifier.pointerInput(Unit) {
+        detectTapGestures(
+            onPress = {
+                isPressed.value = true
+                tryAwaitRelease()
+                isPressed.value = false
+            }
+        )
+    }
 }
 
 @Composable
@@ -143,9 +174,13 @@ fun MediumButton(
     )
 }
 
+// TODO: Figure out button animation
+//       create box that holds text and so replace every LargeButton with text
+enum class ComponentState { Pressed, Released }
+
 @Composable
 fun LargeButton(
-    modifier: Modifier = Modifier,
+    //modifier: Modifier = Modifier,
     mutableEnabled: MutableState<Boolean> = mutableStateOf(true),
     onClick: () -> Unit,
     border: BorderStroke = BorderStroke(1.dp, MaterialTheme.colors.primaryVariant),
@@ -154,18 +189,60 @@ fun LargeButton(
     shape: Shape = RoundedCornerShape(50),
     content: @Composable RowScope.() -> Unit
 ) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier
-            .size(width = 220.dp, height = 60.dp)
-            .alpha(0.825f),
-        elevation = elevation,
-        enabled = mutableEnabled.value,
-        border = border,
-        shape = shape,
-        colors = colors,
-        content = content,
-    )
+/*    var toState by remember { mutableStateOf(ComponentState.Released) }
+    val transition: Transition<ComponentState> = updateTransition(targetState = toState, label = "")
+    // Defines a float animation to scale x,y
+    val scaleX: Float by transition.animateFloat(
+        transitionSpec = { spring(stiffness = 50f) }, label = ""
+    ) { state ->
+        if (state == ComponentState.Pressed) 0.925f else 1f
+    }
+
+    val scaleY: Float by transition.animateFloat(
+        transitionSpec = { spring(stiffness = 50f) }, label = ""
+    ) { state ->
+        if (state == ComponentState.Pressed) 0.95f else 1f
+    }
+
+    val modifier = Modifier
+        .size(width = (220 * scaleX).dp, height = (60 * scaleY).dp)
+        .pointerInput(Unit) {
+        detectTapGestures(
+            onPress = {
+                toState = ComponentState.Pressed
+                tryAwaitRelease()
+                toState = ComponentState.Released
+            }
+        )
+    }*/
+
+    // OLD MODIFIER
+    //        modifier = Modifier
+    //            .size(width = 220.dp, height = 60.dp)
+    //            .alpha(0.825f),graphicsLayer(scaleX = scaleX, scaleY = scaleY)
+
+   // Box(
+    //    modifier = modifier
+           // .size(width = (220 * scaleX).dp, height = (60 * scaleY).dp)
+           // .alpha(0.825f)
+  //  ) {
+
+        Button(
+            onClick = onClick,
+            modifier = Modifier
+                .size(width = 220.dp, height = 60.dp)
+                .alpha(0.825f),//.graphicsLayer(scaleX = scaleX, scaleY = scaleY),
+                //.size(width = (220 * scaleX).dp, height = (60 * scaleY).dp)
+               // .alpha(0.825f)
+                //.graphicsLayer(),
+            elevation = elevation,
+            enabled = mutableEnabled.value,
+            border = border,
+            shape = shape,
+            colors = colors,
+            content = content,
+        )
+    //}
 }
 
 @Composable
@@ -177,7 +254,33 @@ fun LargeText(
     color: Color = Color.Unspecified,
     textAlign: TextAlign? = null
 ) {
+/*    var toState by remember { mutableStateOf(ComponentState.Released) }
+    val transition: Transition<ComponentState> = updateTransition(targetState = toState, label = "")
+    // Defines a float animation to scale x,y
+    val scaleX: Float by transition.animateFloat(
+        transitionSpec = { spring(stiffness = 50f) }, label = ""
+    ) { state ->
+        if (state == ComponentState.Pressed) 0.925f else 1f
+    }
+
+    val scaleY: Float by transition.animateFloat(
+        transitionSpec = { spring(stiffness = 50f) }, label = ""
+    ) { state ->
+        if (state == ComponentState.Pressed) 0.95f else 1f
+    }
+
+    val modifier = Modifier
+        .pointerInput(Unit) {
+            detectTapGestures(
+                onPress = {
+                    toState = ComponentState.Pressed
+                    tryAwaitRelease()
+                    toState = ComponentState.Released
+                }
+            )
+        }*/
     Text(
+        //modifier = modifier.graphicsLayer(scaleX = scaleX, scaleY = scaleY),
         text = text,
         fontFamily = fontFamily,
         fontSize = fontSize,

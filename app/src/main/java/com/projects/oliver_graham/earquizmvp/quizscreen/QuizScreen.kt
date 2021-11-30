@@ -100,14 +100,17 @@ fun QuizScreen(viewModel: QuizScreenViewModel) {
 
         if (viewModel.showFinishedDialog.value) {
             FinishedDialog(
-                dismissRequest = { viewModel.navToHomeScreen() },
+                dismissRequest = { viewModel.resetQuizScreen()
+                    viewModel.navToHomeScreen() },
                 title = "Finished! ${viewModel.questionNumber.value}/${viewModel.totalQuestions}",
                 correctText = "You got ${viewModel.correctUserAnswers.value} correct",
                 incorrectText = "You got ${viewModel.incorrectUserAnswers.value} incorrect",
                 numberOfSoundsPlayedText =
                 "You pressed the interval button ${viewModel.numberOfIntervalTaps.value} times",
-                onHomeButtonClick = { viewModel.navToHomeScreen() },  // can pass this too -> viewModel.resetQuizPage()
-                onLeaderboardButtonClick = { viewModel.navToLeaderboardScreen() },
+                onHomeButtonClick = { viewModel.resetQuizScreen()
+                    viewModel.navToHomeScreen() },  // can pass this too -> viewModel.resetQuizPage()
+                onLeaderboardButtonClick = { viewModel.resetQuizScreen()
+                    viewModel.navToLeaderboardScreen() },
                 navButton1 = { viewModel.navToHomeScreen() },
                 navButton2 = { viewModel.navToLeaderboardScreen() }
             )

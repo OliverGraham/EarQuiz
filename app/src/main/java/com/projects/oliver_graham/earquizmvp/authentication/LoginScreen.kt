@@ -1,42 +1,44 @@
 package com.projects.oliver_graham.earquizmvp.authentication
 
+
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AccountCircle
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.projects.oliver_graham.earquizmvp.homescreen.HeaderRow
 import com.projects.oliver_graham.earquizmvp.ui.*
 import com.projects.oliver_graham.earquizmvp.ui.CenteredContentRow
 import com.projects.oliver_graham.earquizmvp.R
+
 
 @Composable
 fun LoginScreen(viewModel: LoginScreenViewModel) {
 
     val focusManager = LocalFocusManager.current
-    val passwordVisibility = remember { mutableStateOf(false) }
+    val passwordVisibility = remember { mutableStateOf(value = false) }
 
+    val googleSignInActivity = rememberLauncherForActivityResult(contract =
+        ActivityResultContracts.StartActivityForResult()) { activityResult ->
+        viewModel.completeGoogleSignIn(activityResult.data)
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -50,7 +52,6 @@ fun LoginScreen(viewModel: LoginScreenViewModel) {
         Row(modifier = Modifier
             .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
-
         ) { ->
             Image(
                 painterResource(id = R.drawable.earquiz_mainlogo),      // TODO: need larger logo
@@ -97,8 +98,10 @@ fun LoginScreen(viewModel: LoginScreenViewModel) {
             }
         }
         CenteredContentRow(padding = 8.dp) { ->
-            LargeButton(onClick = {  }) { ->
-                LargeText(text = "(GOOGLE)")
+           LargeButton(onClick = {
+                googleSignInActivity.launch(viewModel.getGoogleSignInIntent())
+            }) { ->
+                LargeText(text = "GOOGLE")
             }
         }
         CenteredContentRow(padding = 8.dp) { ->

@@ -62,6 +62,25 @@ class QuizScreenViewModel(
         }
     }
 
+    fun resetQuizScreen() {
+        questionNumber.value = 1
+        correctUserAnswers.value = 0
+        incorrectUserAnswers.value = 0
+        numberOfIntervalTaps.value = 0
+       // currentUserChoice.value = 0
+
+       // submitButtonEnabled.value = false
+        playButtonEnabled.value = true
+        nextButtonEnabled.value = true
+        showAnswerDialog.value = false
+        showFinishedDialog.value = false
+
+        currentCorrectAnswer.value = QuizQuestion(id = 0, text = "", firstNote = 0, secondNote = 0)
+        resetQuizPage()
+    }
+
+    fun emptyRadioGroup() = radioGroup.removeRange(0, radioGroup.size)
+
     fun resetQuizPage() {
 
         player1?.reset()
@@ -70,7 +89,7 @@ class QuizScreenViewModel(
         // unselect radio button, disable submit button and empty the four random choices
         currentUserChoice.value = 0
         submitButtonEnabled.value = false
-        radioGroup.removeRange(0, radioGroup.size)
+        emptyRadioGroup()
 
         // three random intervals and one correct
         val twoCurrentNotes: List<Note> = createTwoRandomNotes()
@@ -145,15 +164,17 @@ class QuizScreenViewModel(
 
     fun navToLeaderboardScreen() = navController.navLeaderboardScreenPopAndTop()
 
+    // TODO: Should be working well? Double check with:
+    //       login a user; create a user; google sign in
     // later, could save results of individual quizzes. For now, just save right and wrong answers
-    private fun saveResultsToFirestore() = viewModelScope.launch { ->
+    private fun saveResultsToFirestore() {
 
         val currentUser = firebaseController.getUserDocument()
         val updatedUser = currentUser?.copy(
             correctAnswers = currentUser.correctAnswers + correctUserAnswers.value,
             incorrectAnswers = currentUser.incorrectAnswers + incorrectUserAnswers.value
         )
-        firebaseController.saveUserDocument(updatedUser)
+        firebaseController.updateUserDocument(updatedUser)
     }
 
     private fun setMediaPlayers(noteOne: String, noteTwo: String) {

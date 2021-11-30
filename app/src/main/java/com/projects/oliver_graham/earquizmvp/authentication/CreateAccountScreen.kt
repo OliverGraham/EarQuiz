@@ -20,6 +20,9 @@ import com.projects.oliver_graham.earquizmvp.R
 import com.projects.oliver_graham.earquizmvp.navigation.Screen
 import com.projects.oliver_graham.earquizmvp.ui.*
 
+
+// TODO: functions for each element
+//       Password field and username field could be generic. Do it!
 @Composable
 fun CreateAccountScreen(viewModel: CreateAccountScreenViewModel) {
 

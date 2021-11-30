@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
                 // TODO: Add Logo header
                 // TODO: Do I still want the user to be able to determine # of questions?
                 // TODO: Same background image for entire app? Different images for different screens?
-                MainNavigation()
+                MainNavigation(this)
 
                 /*BackGroundImage {
 
