@@ -49,7 +49,9 @@ fun HomeScreen(
 ) {
     val listState = rememberLazyListState()
     LazyColumn(
-        state = listState
+        state = listState,
+        modifier = Modifier.fillMaxHeight()
+
     ){
         // so header doesn't scroll
         stickyHeader {

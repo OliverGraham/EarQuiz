@@ -12,19 +12,18 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.IOException
 import androidx.lifecycle.ViewModel
-import androidx.navigation.NavController
 import com.projects.oliver_graham.earquizmvp.R
 import com.projects.oliver_graham.earquizmvp.data.*
+import com.projects.oliver_graham.earquizmvp.navigation.HOME_INDEX
+import com.projects.oliver_graham.earquizmvp.navigation.LEADERBOARD_INDEX
 import com.projects.oliver_graham.earquizmvp.navigation.NavigationController
-import com.projects.oliver_graham.earquizmvp.navigation.Screen
-
 import kotlin.random.Random
 
-
-// class QuizPageViewModel(application: Application) : AndroidViewModel(application) {
 class QuizScreenViewModel(
     private val navController: NavigationController,
-    private val firebaseController: FirebaseController
+    private val firebaseController: FirebaseController,
+    private val isTakingQuiz: MutableState<Boolean>,
+    private val navItemSelectedIndex: MutableState<Int>
     ) : ViewModel() {
 
     val quizName = "Intervals"          // get quiz name from nav?
@@ -67,15 +66,14 @@ class QuizScreenViewModel(
         correctUserAnswers.value = 0
         incorrectUserAnswers.value = 0
         numberOfIntervalTaps.value = 0
-       // currentUserChoice.value = 0
 
-       // submitButtonEnabled.value = false
         playButtonEnabled.value = true
         nextButtonEnabled.value = true
         showAnswerDialog.value = false
         showFinishedDialog.value = false
 
         currentCorrectAnswer.value = QuizQuestion(id = 0, text = "", firstNote = 0, secondNote = 0)
+        isTakingQuiz.value = false
         resetQuizPage()
     }
 
@@ -152,7 +150,6 @@ class QuizScreenViewModel(
         // if end of quiz, open next dialog
         if (questionNumber.value == totalQuestions) {
             saveResultsToFirestore()
-            // need to reset quizpage() ?
             showFinishedDialog.value = !showFinishedDialog.value
         } else {
             questionNumber.value++
@@ -160,21 +157,29 @@ class QuizScreenViewModel(
         }
     }
 
-    fun navToHomeScreen() = navController.navHomeScreenPopAndTop()
+    fun navToHomeScreen() {
+        navItemSelectedIndex.value = HOME_INDEX
+        navController.navHomeScreenPopAndTop()
+    }
 
-    fun navToLeaderboardScreen() = navController.navLeaderboardScreenPopAndTop()
+    fun navToLeaderboardScreen() {
+        navItemSelectedIndex.value = LEADERBOARD_INDEX
+        navController.navLeaderboardScreenPopAndTop()
+    }
 
-    // TODO: Should be working well? Double check with:
-    //       login a user; create a user; google sign in
     // later, could save results of individual quizzes. For now, just save right and wrong answers
     private fun saveResultsToFirestore() {
 
-        val currentUser = firebaseController.getUserDocument()
-        val updatedUser = currentUser?.copy(
-            correctAnswers = currentUser.correctAnswers + correctUserAnswers.value,
-            incorrectAnswers = currentUser.incorrectAnswers + incorrectUserAnswers.value
-        )
-        firebaseController.updateUserDocument(updatedUser)
+        if (firebaseController.isUserLoggedIn()) {
+            val currentUser = firebaseController.getUserDocument()
+            val updatedUser = currentUser?.copy(
+                correctAnswers = currentUser.correctAnswers + correctUserAnswers.value,
+                incorrectAnswers = currentUser.incorrectAnswers + incorrectUserAnswers.value
+            )
+            firebaseController.updateUserDocument(updatedUser)
+        }
+        // TODO: else "no results saved, create account to compare your score with others"
+
     }
 
     private fun setMediaPlayers(noteOne: String, noteTwo: String) {
@@ -185,7 +190,7 @@ class QuizScreenViewModel(
             player2?.setDataSource(noteTwo)
             player2?.prepareAsync()
 
-            // doesn't catch, even with error
+            // TODO: doesn't catch, even with error
         } catch (ioException: IOException) {
             //Toast.makeText(appContext?.applicationContext, "Unable to connect to sound database." +
             //        " please check internet connection.", Toast.LENGTH_SHORT).show()

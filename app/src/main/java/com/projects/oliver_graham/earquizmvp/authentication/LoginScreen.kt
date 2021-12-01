@@ -118,14 +118,14 @@ fun LoginScreen(viewModel: LoginScreenViewModel) {
         Spacer(modifier = Modifier.padding(4.dp))
 
         Column(
-            modifier = Modifier
-                .fillMaxHeight(),
+            modifier = Modifier,
+                //.fillMaxHeight(),
             verticalArrangement = Arrangement.Bottom
         ) { ->
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .fillMaxWidth(),
+                   // .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.End
             ) { ->
 
@@ -134,7 +134,7 @@ fun LoginScreen(viewModel: LoginScreenViewModel) {
                     Icon(Icons.Rounded.PlayArrow, "")
                 }
             }
-            Spacer(modifier = Modifier.padding(8.dp))
+           // Spacer(modifier = Modifier.padding(8.dp))
         }
 
     }

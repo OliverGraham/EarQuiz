@@ -1,14 +1,31 @@
 package com.projects.oliver_graham.earquizmvp.navigation
 
 import android.content.Context
+
 import androidx.compose.animation.*
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -26,7 +43,15 @@ import com.projects.oliver_graham.earquizmvp.leaderboardscreen.LeaderboardScreen
 import com.projects.oliver_graham.earquizmvp.leaderboardscreen.LeaderboardScreenViewModel
 import com.projects.oliver_graham.earquizmvp.quizscreen.QuizScreen
 import com.projects.oliver_graham.earquizmvp.quizscreen.QuizScreenViewModel
-
+import kotlin.math.log
+import com.projects.oliver_graham.earquizmvp.navigation.authNavGraph
+import kotlinx.coroutines.delay
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.material.Button
+import androidx.compose.material.Text
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 
 @ExperimentalMaterialApi
 @ExperimentalFoundationApi
@@ -35,9 +60,14 @@ import com.projects.oliver_graham.earquizmvp.quizscreen.QuizScreenViewModel
 fun MainNavigation(
     context: Context
 ) {
-    val navController = rememberAnimatedNavController() // passed in from MainActivity?
+    val navController = rememberAnimatedNavController()
     val navWrapper = remember { NavigationController(navController) }
     val firebaseController = remember { FirebaseController(navWrapper, context) }
+
+    // state that needs to shared across app
+    val isTakingQuiz: MutableState<Boolean> = remember { mutableStateOf(value = false) }
+    val showBottomNavBar: MutableState<Boolean> = remember { mutableStateOf(value = false) }
+    val navItemSelectedIndex: MutableState<Int> = remember { mutableStateOf(0) }    // needs to be changed any time there's navigation sigh
 
     // FOR TESTING ONLY
     if (firebaseController.isUserLoggedIn()) {
@@ -48,110 +78,126 @@ fun MainNavigation(
     val loginScreenViewModel = remember { LoginScreenViewModel(navWrapper, firebaseController) }
     val createAccountScreenViewModel =
         remember { CreateAccountScreenViewModel(navWrapper, firebaseController) }
-    val homeScreenViewModel = remember { HomeScreenViewModel(navWrapper) }
-    val quizScreenViewModel = remember { QuizScreenViewModel(navWrapper, firebaseController) }
+    val homeScreenViewModel = remember { HomeScreenViewModel(navWrapper, isTakingQuiz, navItemSelectedIndex) }
+    val quizScreenViewModel = remember { QuizScreenViewModel(navWrapper, firebaseController, isTakingQuiz, navItemSelectedIndex) }
     val leaderboardScreenViewModel =
-        remember { LeaderboardScreenViewModel(navWrapper, firebaseController) }
+        remember { LeaderboardScreenViewModel(navWrapper, firebaseController, navItemSelectedIndex) }
 
-    val animationDuration = 750
-    val animationOffset = 500
-
-    AnimatedNavHost(
-        navController = navController,
-        startDestination = if (firebaseController.isUserLoggedIn()) Screen.HomeScreen.route else Screen.LoginScreen.route
-        //startDestination = Screen.LeaderboardScreen.route
-    ) { ->
-        composable(
-            route = Screen.HomeScreen.route,
-            enterTransition = enterTransition(animationOffset, animationDuration),
-            popExitTransition = popExitTransition(animationOffset, animationDuration)
-        ) { _ ->
-            HomeScreen(viewModel = homeScreenViewModel)
+    Scaffold(
+        bottomBar = {
+                BottomBar(
+                    navController = navController,
+                    screenList = listOf(
+                        Screen.HomeScreen,
+                        Screen.QuizScreen,
+                        Screen.LeaderboardScreen
+                    ),
+                    showBottomNavBar = showBottomNavBar.value,
+                    isTakingQuiz = isTakingQuiz.value,
+                    navItemSelectedIndex = navItemSelectedIndex
+                )
         }
 
-        composable(
-            route = Screen.QuizScreen.route,
-            enterTransition = enterTransition(animationOffset, animationDuration),
-            popExitTransition = popExitTransition(animationOffset, animationDuration)
-        ) { _ ->
-            QuizScreen(viewModel = quizScreenViewModel)
-        }
+    ) { innerPadding ->
 
-        composable(
-            route = Screen.LoginScreen.route,
-            enterTransition = enterTransition(animationOffset, animationDuration),
-            popExitTransition = popExitTransition(animationOffset, animationDuration)
-        ) { _ ->
-            LoginScreen(viewModel = loginScreenViewModel)
-        }
-
-        composable(
-            route = Screen.CreateAccountScreen.route,
-            enterTransition = enterTransition(animationOffset, animationDuration),
-            popExitTransition = popExitTransition(animationOffset, animationDuration)
-        ) { _ ->
-            CreateAccountScreen(viewModel = createAccountScreenViewModel)
-        }
-
-        composable(
-            route = Screen.LeaderboardScreen.route,
-            enterTransition = enterTransition(animationOffset, animationDuration),
-            popExitTransition = popExitTransition(animationOffset, animationDuration)
-        ) { _ ->
-           LeaderboardScreen(viewModel = leaderboardScreenViewModel)
+        AnimatedNavHost(
+            navController = navController,
+            startDestination = if (firebaseController.isUserLoggedIn()) HOME_GRAPH_ROUTE else AUTH_GRAPH_ROUTE,
+            route = ROOT_GRAPH_ROUTE,
+            modifier = Modifier.padding(innerPadding)
+            //startDestination = Screen.LeaderboardScreen.route
+        ) { ->
+            authNavGraph(
+                showBottomNavBar = showBottomNavBar,
+                loginScreenViewModel = loginScreenViewModel,
+                createAccountScreenViewModel = createAccountScreenViewModel
+            )
+            homeNavGraph(
+                showBottomNavBar = showBottomNavBar,
+                homeScreenViewModel = homeScreenViewModel,
+                quizScreenViewModel = quizScreenViewModel,
+                leaderboardScreenViewModel = leaderboardScreenViewModel
+            )
         }
     }
 
 }
 
 
-@ExperimentalAnimationApi
-fun enterTransition(
-    animationOffset: Int,
-    animationDuration: Int
-): (AnimatedContentScope<String>.(NavBackStackEntry, NavBackStackEntry) -> EnterTransition?) =
-    { _, _ ->
-       slideInHorizontally(
-           initialOffsetX = { animationOffset },
-           animationSpec = tween(
-               durationMillis = animationDuration,
-               easing = FastOutSlowInEasing
-           )
-       ) + fadeIn(animationSpec = tween(animationDuration))
+
+
+@Composable
+fun TopBar(
+    firebaseController: FirebaseController
+) {
+
 }
 
+
 @ExperimentalAnimationApi
-fun popExitTransition(
-    animationOffset: Int,
-    animationDuration: Int
-): (AnimatedContentScope<String>.(NavBackStackEntry, NavBackStackEntry) -> ExitTransition) =
-    { _, _ ->
-        slideOutHorizontally(
-            targetOffsetX = { animationOffset },
-            animationSpec = tween(
-                durationMillis = animationDuration,
-                easing = FastOutSlowInEasing
-        )
-    ) + fadeOut(animationSpec = tween(animationDuration))
+@Composable
+fun BottomBar(
+    navController: NavController,
+    screenList: List<Screen>,
+    showBottomNavBar: Boolean,
+    isTakingQuiz: Boolean,
+    navItemSelectedIndex: MutableState<Int>
+) {
+
+    AnimatedVisibility(
+        visible = showBottomNavBar,
+        enter = slideInVertically()
+        //exit = slideOutVertically(targetOffsetY = { it })
+    ) { ->
+        BottomNavigation { ->
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentDestination = navBackStackEntry?.destination
+            screenList.forEachIndexed { index, screen ->
+                BottomNavigationItem(
+                    icon = {
+                        AnimatableIcon(
+                            imageVector = screen.icon,
+                            scale = if (navItemSelectedIndex.value == index) 1.75f else 1.0f,
+                            color = if (navItemSelectedIndex.value == index) MaterialTheme.colors.secondary else MaterialTheme.colors.onPrimary
+                        )
+                           },
+                    label = { screen.route },
+                    selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                    onClick = {
+                        if (isTakingQuiz)
+                            bottomNavClick(
+                                navController = navController,
+                                route = screen.route,
+                                navItemSelectedIndex = navItemSelectedIndex,
+                                index = index
+                            )
+                         else if (screen.route != Screen.QuizScreen.route)
+                            bottomNavClick(
+                                navController = navController,
+                                route = screen.route,
+                                navItemSelectedIndex = navItemSelectedIndex,
+                                index = index
+                            )
+                    }
+                )
+            }
+        }
+    }
 }
 
-    // TODO: Are these needed?
-    /*
-    exitTransition = {_, _ ->
-        slideOutHorizontally(
-            targetOffsetX = { -animationOffset },
-            animationSpec = tween(
-                durationMillis = animationDuration,
-                easing = FastOutSlowInEasing
-            )
-        ) + fadeOut(animationSpec = tween(animationDuration))
-    },
-    popEnterTransition = { initial, _ ->
-        slideInHorizontally(
-            initialOffsetX = { -animationOffset },
-            animationSpec = tween(
-                durationMillis = animationDuration,
-                easing = FastOutSlowInEasing
-            )
-        ) + fadeIn(animationSpec = tween(animationDuration))
-    },*/
+
+private fun bottomNavClick(
+    navController: NavController,
+    route: String,
+    navItemSelectedIndex: MutableState<Int>,
+    index: Int
+) {
+    navItemSelectedIndex.value = index
+    navController.navigate(route) { ->
+        popUpTo(Screen.HomeScreen.route) { ->
+            //saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
+    }
+}

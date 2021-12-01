@@ -92,4 +92,7 @@ dependencies {
 
     // google signin?
     implementation 'com.google.android.gms:play-services-auth:19.2.0'
+
+    // more icons
+    implementation "androidx.compose.material:material-icons-extended:$compose_version"
 }
