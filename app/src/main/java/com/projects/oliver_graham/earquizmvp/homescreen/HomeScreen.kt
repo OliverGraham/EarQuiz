@@ -1,45 +1,37 @@
 package com.projects.oliver_graham.earquizmvp.homescreen
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
-
+import androidx.compose.material.Card
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.outlined.ArrowForward
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import com.projects.oliver_graham.earquizmvp.ui.*
+import com.projects.oliver_graham.earquizmvp.ui.CenteredContentRow
+import com.projects.oliver_graham.earquizmvp.ui.CircularIconButton
+import com.projects.oliver_graham.earquizmvp.ui.LargeText
+
+// TODO: Refactor this screen
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -52,17 +44,7 @@ fun HomeScreen(
         state = listState,
         modifier = Modifier.fillMaxHeight()
 
-    ){
-        // so header doesn't scroll
-        stickyHeader {
-            Surface(modifier = Modifier.fillParentMaxWidth()) {
-                HeaderRow(
-                    headerTitle = "EarQuiz",
-                    logo = 0,
-                    otherLogo = 0
-                )
-            }
-        }
+    ){ ->
         // make an expandable quiz description, with button, for every description in the repo
         itemsIndexed(viewModel.quizDescriptions) { index, quizDescription ->
             Spacer(
@@ -71,7 +53,7 @@ fun HomeScreen(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
+            ) { ->
 
                 ExpandableRow(                   // change name to ExpandableWideCard?
                     title = quizDescription.title,
@@ -79,7 +61,7 @@ fun HomeScreen(
                 )
 
                 // only intervals quiz (index 0) is available, so disable other buttons
-                val isIconButtonEnabled = remember { mutableStateOf(index == 0) }
+                val isIconButtonEnabled = remember { mutableStateOf(value = index == 0) }
 
                 CircularIconButton(
                     onClick = { viewModel.onQuizButtonClick() },
@@ -87,7 +69,7 @@ fun HomeScreen(
                     mutableEnabled = isIconButtonEnabled,
                     buttonBackgroundColor =     // gray background if button is disabled
                         if (isIconButtonEnabled.value) Color.Unspecified
-                        else MaterialTheme.colors.background
+                        else Color(color = 0xFFB0BEC5)      // BlueGray200
                 )
             }
             Spacer(
@@ -97,19 +79,6 @@ fun HomeScreen(
 
     }
 }
-
-@Composable
-fun HeaderRow(
-    headerTitle: String,
-    logo: Int,              // logos should be painterResource?
-    otherLogo: Int
-) {
-    Row {
-        LargeText(text = headerTitle)
-        // Icon(painter = , contentDescription = )
-    }
-}
-
 
 @SuppressLint("UnusedTransitionTargetStateParameter")
 @ExperimentalAnimationApi
@@ -123,7 +92,7 @@ fun ExpandableRow(
     val animationDuration = 1000
 
     val transitionState = remember {
-        MutableTransitionState(expanded.value).apply {
+        MutableTransitionState(expanded.value).apply { ->
             targetState = !expanded.value
         }
     }
@@ -134,7 +103,7 @@ fun ExpandableRow(
 
     // set parameters for expand animations
     // all animations happen over one second
-    val backgroundColor by transition.animateColor({
+    val backgroundColor by transition.animateColor({ ->
         tween(durationMillis = animationDuration)
     }, label = "animate background color") {
         if (expanded.value)
@@ -143,7 +112,7 @@ fun ExpandableRow(
             MaterialTheme.colors.primary
     }
 
-    val textColor by transition.animateColor({
+    val textColor by transition.animateColor({ ->
         tween(durationMillis = animationDuration)
     }, label = "animate text color") {
         if (expanded.value)
@@ -152,7 +121,7 @@ fun ExpandableRow(
             MaterialTheme.colors.onPrimary
     }
 
-    val rowPaddingHorizontal by transition.animateDp({
+    val rowPaddingHorizontal by transition.animateDp({ ->
         tween(durationMillis = animationDuration)
     }, label = "row padding") {
         if (expanded.value)
@@ -161,7 +130,7 @@ fun ExpandableRow(
             12.dp
     }
 
-    val cardElevation by transition.animateDp({
+    val cardElevation by transition.animateDp({ ->
         tween(durationMillis = animationDuration)
     }, label = "") {
         if (expanded.value)
@@ -170,7 +139,7 @@ fun ExpandableRow(
             4.dp
     }
 
-    val rowRoundedCorners by transition.animateDp({
+    val rowRoundedCorners by transition.animateDp({ ->
         tween(
             durationMillis = animationDuration,
             easing = FastOutSlowInEasing
@@ -182,7 +151,7 @@ fun ExpandableRow(
             16.dp
     }
 
-    val arrowRotationDegree by transition.animateFloat({
+    val arrowRotationDegree by transition.animateFloat({ ->
         tween(durationMillis = animationDuration)
     }, label = "") {
         if (expanded.value)
@@ -198,23 +167,23 @@ fun ExpandableRow(
         elevation = cardElevation,
         shape = RoundedCornerShape(rowRoundedCorners),
         modifier = Modifier
-            .fillMaxWidth(0.75f)
-            .padding(
-                horizontal = rowPaddingHorizontal,
-                //vertical = 8.dp
-            )
+            .fillMaxWidth(fraction = 0.75f)
+            .padding(horizontal = rowPaddingHorizontal)
+            .alpha(alpha = .9f)
     ) {
 
-        Column(Modifier.clickable(onClick = { expanded.value = !expanded.value })) {
-            CenteredContentRow {
+        Column(Modifier.clickable(onClick = { expanded.value = !expanded.value })) { ->
+            CenteredContentRow { ->
                 LargeText(
                     text = title,
                     color = textColor,
                     textAlign = TextAlign.Center
                 )
-                Icon(Icons.Rounded.PlayArrow,       // change to some music note
-                    "",
-                    modifier = Modifier.rotate(arrowRotationDegree)
+                Icon(Icons.Rounded.MusicNote,       // change to some music note
+                    contentDescription = "",
+                    modifier = Modifier.rotate(arrowRotationDegree),
+                    tint =  textColor
+
                 )
             }
             ExpandableContent(
@@ -262,10 +231,15 @@ fun ExpandableContent(
         enter = enterExpand + enterFadeIn,
         exit = exitCollapse + exitFadeOut
     ) {
-        Column(modifier = Modifier.padding(8.dp)) {
+        Column(modifier = Modifier.padding(8.dp)) { ->
             quizDescriptions.forEach { quizDescription ->
-                CenteredContentRow {
-                    Icon(Icons.Rounded.PlayArrow, "")     // music note icon
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) { ->
+                    Icon(Icons.Rounded.MusicNote, contentDescription = "")
+                    Spacer(modifier = Modifier.padding(horizontal = 4.dp))
                     Text(
                         text = quizDescription,
                         textAlign = TextAlign.Center

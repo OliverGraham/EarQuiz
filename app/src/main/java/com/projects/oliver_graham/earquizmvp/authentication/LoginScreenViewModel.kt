@@ -30,7 +30,7 @@ class LoginScreenViewModel(
             navController.navHomeScreenPopBackstack()
     }
 
-    // Google and Facebook verify?
+    // (Facebook sign in will be added)
     fun getGoogleSignInIntent() = firebaseController.getGoogleSignInIntent()
     fun completeGoogleSignIn(intent: Intent?) = firebaseController.completeGoogleSignIn(intent)
 

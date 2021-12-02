@@ -171,11 +171,21 @@ class QuizScreenViewModel(
     private fun saveResultsToFirestore() {
 
         if (firebaseController.isUserLoggedIn()) {
+         //   val currentUser = firebaseController.getUserDocument()
             val currentUser = firebaseController.getUserDocument()
             val updatedUser = currentUser?.copy(
                 correctAnswers = currentUser.correctAnswers + correctUserAnswers.value,
                 incorrectAnswers = currentUser.incorrectAnswers + incorrectUserAnswers.value
             )
+
+            /*firebaseController.fullyUpdateDocument(
+                uid = updatedUser!!.uid,
+                userName = updatedUser.userName,
+                email = updatedUser.email,
+                correctAnswers = updatedUser.correctAnswers,
+                incorrectAnswers = updatedUser.incorrectAnswers
+            )*/
+
             firebaseController.updateUserDocument(updatedUser)
         }
         // TODO: else "no results saved, create account to compare your score with others"

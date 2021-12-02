@@ -100,23 +100,28 @@ fun QuizScreen(viewModel: QuizScreenViewModel) {
 
         if (viewModel.showFinishedDialog.value) {
             FinishedDialog(
-                dismissRequest = { viewModel.resetQuizScreen()
-                    viewModel.navToHomeScreen() },
+                dismissRequest = {
+                    viewModel.resetQuizScreen()
+                    viewModel.navToHomeScreen()
+                },
                 title = "Finished! ${viewModel.questionNumber.value}/${viewModel.totalQuestions}",
                 correctText = "You got ${viewModel.correctUserAnswers.value} correct",
                 incorrectText = "You got ${viewModel.incorrectUserAnswers.value} incorrect",
                 numberOfSoundsPlayedText =
                 "You pressed the interval button ${viewModel.numberOfIntervalTaps.value} times",
-                onHomeButtonClick = { viewModel.resetQuizScreen()
-                    viewModel.navToHomeScreen() },  // can pass this too -> viewModel.resetQuizPage()
-                onLeaderboardButtonClick = { viewModel.resetQuizScreen()
-                    viewModel.navToLeaderboardScreen() },
+                onHomeButtonClick = {
+                    viewModel.resetQuizScreen()
+                    viewModel.navToHomeScreen()
+               },
+                onLeaderboardButtonClick = {
+                    viewModel.resetQuizScreen()
+                    viewModel.navToLeaderboardScreen()
+                },
                 navButton1 = { viewModel.navToHomeScreen() },
                 navButton2 = { viewModel.navToLeaderboardScreen() }
             )
         }
-
-    } // end of column
+    }
 }
 
 @Composable
@@ -315,7 +320,7 @@ private fun FinishedDialog(
                             text = "Home",
                             fontSize = 12.sp
                         )
-                        Icon(Icons.Rounded.Home, "")
+                        Icon(Icons.Rounded.Home, contentDescription = "")
                     }
                 )
                 Spacer(modifier = Modifier.padding(4.dp))
@@ -327,7 +332,7 @@ private fun FinishedDialog(
                             text = "Leaderboard",
                             fontSize = 12.sp
                         )
-                        Icon(Icons.Rounded.Notifications, "")
+                        Icon(Icons.Rounded.Notifications, contentDescription = "")
                     }
                 )
             }
@@ -374,12 +379,6 @@ private fun TopRow(
                 color = Color.Red
             )
             Spacer(modifier = Modifier.padding(4.dp))
-
-            Icon(
-                Icons.Rounded.Settings,
-                contentDescription = "",
-                modifier = Modifier.size(32.dp)
-            )
         }
     }
 }
@@ -396,7 +395,7 @@ private fun PlayIntervalButtonRow(
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
+    ) { ->
         LargeButton(
             onClick = { playSound() },
             mutableEnabled = playButtonEnabled,
@@ -405,7 +404,7 @@ private fun PlayIntervalButtonRow(
                     text = "Play Interval",
                     fontSize = 20.sp
                 )
-                Icon(Icons.Rounded.PlayArrow, "")
+                Icon(Icons.Rounded.PlayArrow, contentDescription = "")
             }
         )
         LargeText(

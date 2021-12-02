@@ -49,16 +49,6 @@ fun LoginScreen(viewModel: LoginScreenViewModel) {
                 })
             }
     ) { ->
-        Row(modifier = Modifier
-            .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) { ->
-            Image(
-                painterResource(id = R.drawable.earquiz_mainlogo),      // TODO: need larger logo
-                contentDescription = "EarQuiz Logo"
-            )
-        }
-        Divider(modifier = Modifier.padding(8.dp))
         CenteredContentRow(padding = 1.dp) { ->
             GenericTextField(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),

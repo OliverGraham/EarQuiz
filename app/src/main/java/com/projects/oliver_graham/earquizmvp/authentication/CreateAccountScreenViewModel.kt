@@ -29,12 +29,11 @@ class CreateAccountScreenViewModel(
                     passwordTextField.value == confirmPasswordTextField.value
     }
 
-    // Create user in authentication and create document in database
+    // Create user after authentication and create document in database
     fun createAccountButtonClick() = viewModelScope.launch { ->
         firebaseController.createUserWithEmailAndPassword(
             usernameTextField.value, emailTextField.value, passwordTextField.value
         )
         navController.navHomeScreenNoBack()
     }
-
 }

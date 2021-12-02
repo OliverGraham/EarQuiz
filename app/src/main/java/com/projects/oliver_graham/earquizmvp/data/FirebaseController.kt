@@ -3,9 +3,13 @@ package com.projects.oliver_graham.earquizmvp.data
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
+import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.projects.oliver_graham.earquizmvp.navigation.NavigationController
@@ -13,16 +17,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthProvider
 
-// TODO: Refactor signin methods to update the current user; make nicer
 class FirebaseController(
     private val navController: NavigationController,
     private val context: Context
 ) {
-
     companion object {
         private const val USERS_COLLECTION = "users"
         private const val ID_TOKEN_GOOGLE =
@@ -33,9 +32,11 @@ class FirebaseController(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val scope = CoroutineScope(Dispatchers.IO)
 
-    // flow of Users from firestore
+    // flow of Users from firestore and LiveData to listen for callback when user logs in
     private val _usersList = MutableStateFlow(listOf<User>())
-    private var currentUserDocument: User? = User()
+    private val currentUserDocument: MutableLiveData<User> by lazy {
+        MutableLiveData<User>()
+    }
 
     init {
         initializeUsersList()
@@ -43,17 +44,46 @@ class FirebaseController(
     }
 
     fun isUserLoggedIn() = auth.currentUser != null
+
+    // logout functionality will be added soon
     fun logOutUserFromFirebase() = auth.signOut()
     fun logOutUserFromGoogle() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(ID_TOKEN_GOOGLE)
             .build()
         GoogleSignIn.getClient(context, gso).signOut()
-
     }
 
     fun getUsers(): MutableStateFlow<List<User>> = _usersList
-    fun getUserDocument(): User? = currentUserDocument
+    fun getUserDocument(): User? = currentUserDocument.value
+
+    fun createUserWithEmailAndPassword(userName: String, email: String, password: String) {
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    initializeUser()
+                    auth.currentUser?.let { saveAuthenticatedUserAsNewDocument(it, userName, email) }
+                } else
+                    toastMessage(context, message = "Unable to create user")
+            }
+    }
+
+    fun signInWithEmailAndPassword(email: String, password: String) {
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener {  task ->
+                if (task.isSuccessful) {
+                    initializeUser()
+                    navController.navHomeScreenPopBackstack()
+                } else
+                    toastMessage(context = context, "Invalid username/password")
+            }
+
+    }
+
+    fun updateUserDocument(user: User?) {
+        firestore.collection(USERS_COLLECTION).document(user!!.uid)
+            .set(user, SetOptions.merge())
+    }
 
     fun getGoogleSignInIntent(): Intent {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -63,7 +93,6 @@ class FirebaseController(
 
         return GoogleSignIn.getClient(context, gso).signInIntent
     }
-
     fun completeGoogleSignIn(intent: Intent?) {
         val task = GoogleSignIn.getSignedInAccountFromIntent(intent)
         try {
@@ -78,13 +107,12 @@ class FirebaseController(
 
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
+
         auth.signInWithCredential(credential)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    if (user != null) {
+                    if (auth.currentUser != null) {
                         initializeUser()
-                        user.email?.let { saveUserToFirestore(user, "", it) }
                         navController.navHomeScreenPopBackstack()
                     }
                 } else {
@@ -93,46 +121,17 @@ class FirebaseController(
             }
     }
 
-    fun updateUserDocument(user: User?) {
-        firestore.collection(USERS_COLLECTION).document(user!!.uid)
-            .set(user, SetOptions.merge())
-    }
-
-    private fun saveUserToFirestore(currentUser: FirebaseUser, userName: String, email: String) {
-        firestore.collection(USERS_COLLECTION).document(currentUser.uid)
+    private fun saveAuthenticatedUserAsNewDocument(user: FirebaseUser, userName: String, email: String) {
+        firestore.collection(USERS_COLLECTION).document(user.uid)
             .set(User(
-                    uid = currentUser.uid,
-                    userName = if (userName != "") userName else email,
-                    email = email
+                uid = user.uid,
+                userName = if (userName != "") userName else email,
+                email = email,
                 )
             )
     }
 
-    // TODO: can use coroutine to reduce nesting?
-    fun createUserWithEmailAndPassword(userName: String, email: String, password: String) {
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful)
-                    // auth has a currentUser, it just can't believe it
-                    auth.currentUser?.let { saveUserToFirestore(it, userName, email) }
-                else
-                    toastMessage(context, message = "Unable to create user")
-            }
-    }
-
-    fun signInWithEmailAndPassword(email: String, password: String) {
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener {  task ->
-                if (task.isSuccessful) {
-                    initializeUser()
-                    navController.navHomeScreenPopBackstack()
-                }
-                else
-                    toastMessage(context = context, "Invalid username/password")
-            }
-
-    }
-
+    // gets every document from firestore as a flow
     private fun initializeUsersList() {
         firestore.collection(USERS_COLLECTION)
             .addSnapshotListener { users, e ->
@@ -152,7 +151,8 @@ class FirebaseController(
             firestore.collection(USERS_COLLECTION).document(authenticatedUser.uid).get()
                 .addOnSuccessListener { user ->
                     if (user != null)
-                        currentUserDocument = user.toObject(User::class.java)
+                        // set the live data for later observation
+                        currentUserDocument.value = user.toObject(User::class.java)
                 }
         }
     }

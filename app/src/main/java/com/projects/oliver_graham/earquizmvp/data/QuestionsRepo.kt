@@ -5,35 +5,8 @@ import com.projects.oliver_graham.earquizmvp.R
 object QuestionsRepo {
     fun getIntervalsByHalfStep(): Map<Int, String> = intervalsByHalfStep
     fun getNotes(): List<Note> = notes
-
-    fun getIntervalQuizDescription(): List<String> = intervalQuizDescription
-    fun getEasyChordQuizDescription(): List<String> = easyChordQuizDescription
-    fun getMediumChordQuizDescription(): List<String> = mediumChordQuizDescription
-    fun getRandomQuizDescription(): List<String> = randomQuizDescription
     fun getAllQuizDescriptions(): List<QuizDescription> = allDescriptions
-
-    fun getAllDescriptionsList(): List<List<String>> = allDescriptionsList
-
-    fun getNoteNames(): List<String> = noteNames
-    fun getNoteOctaves(): List<String> = noteOctaves
-    fun getRadioLabelsMap(): Map<String, String> = intervalLabels
 }
-
-// Note data, for querying notes and making random groups of notes
-private val intervalLabels: Map<String, String> = mapOf(
-    "m2" to "Minor 2nd (half step)",
-    "M2" to "Major 2nd (whole step)",
-    "m3" to "Minor 3rd",
-    "M3" to "Major 3rd",
-    "P4" to "Perfect 4th",
-    "a4" to "Tritone",
-    "P5" to "Perfect 5th",
-    "m6" to "Minor 6th",
-    "M6" to "Major 6th",
-    "m7" to "Minor 7th",
-    "M7" to "Major 7th",
-    "P8" to "Octave",
-)
 
 private val intervalsByHalfStep: Map<Int, String> = mapOf(
     1 to "Minor 2nd (half step)",
@@ -106,27 +79,6 @@ private val notes: List<Note> = listOf(
     Note(id = 75, name = "b5", accidental = 0, soundPath = "B5", imageId = 0),              // B*/
 )
 
-private val noteNames: List<String> = listOf(
-    "C",
-    "C%23",        // C# / Db
-    "D",
-    "D%23",
-    "E",
-    "F",
-    "F%23",
-    "G",
-    "G%23",
-    "A",
-    "A%23",
-    "B",
-)
-
-private val noteOctaves: List<String> = listOf(
-    "3",
-    "4",
-    "5"
-)
-
 // HomeScreen Data
 private val intervalQuizDescription: List<String> = listOf(
     "Try to guess the interval",
@@ -152,13 +104,6 @@ private val mediumChordQuizDescription: List<String> = listOf(
 private val randomQuizDescription: List<String> = listOf(
     "Quiz coming soon!",
     "Will contain a mixture of intervals and chords"
-)
-
-private val allDescriptionsList: List<List<String>> = listOf(
-    intervalQuizDescription,
-    easyChordQuizDescription,
-    mediumChordQuizDescription,
-    randomQuizDescription
 )
 
 private val allDescriptions: List<QuizDescription> = listOf(

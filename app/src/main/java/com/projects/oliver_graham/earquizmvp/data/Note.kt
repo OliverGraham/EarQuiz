@@ -2,7 +2,6 @@ package com.projects.oliver_graham.earquizmvp.data
 
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Immutable
-import com.projects.oliver_graham.earquizmvp.R
 
 @Immutable
 data class Note(

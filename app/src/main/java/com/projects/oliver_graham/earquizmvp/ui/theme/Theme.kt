@@ -14,12 +14,10 @@ private val DarkColorPalette = darkColors(
 )
 
 private val LightColorPalette = lightColors(
-   // primary = Purple500,
-    primary = BlueGray600,          // button color, for instance
+    primary = BlueGray600,           // button color, for instance
    // primaryVariant = Purple700,
     primaryVariant = LightBlueA100,
     secondary = Teal200,
-
 
     background = Gray300,
     onPrimary = LightBlue300

@@ -1,7 +1,9 @@
 package com.projects.oliver_graham.earquizmvp.ui
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.Transition
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -10,8 +12,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,7 +19,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -35,10 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.projects.oliver_graham.earquizmvp.R
 
-@Composable
-fun LogoHeader() {
 
-}
+// TODO: Figure out AnimateButtonPress()
 
 @Composable
 fun AnimateButtonPress() {
@@ -296,7 +293,7 @@ fun TextWithLeadingIcon(
     icon: ImageVector,
     tint: Color = Color.Unspecified
 ) {
-    Row {
+    Row { ->
         Icon(
             imageVector = icon,
             contentDescription = "",
@@ -310,9 +307,7 @@ fun TextWithLeadingIcon(
 @Composable
 fun TextAndRadio(
     text: String,
-    //radioID: String,
     radioID: Int,
-    //radioChoice: MutableState<String>,      // reflect state change when clicking radio button
     radioChoice: MutableState<Int>,      // reflect state change when clicking radio button
     enableOtherUI: MutableState<Boolean>? = null
 ) {
@@ -320,12 +315,12 @@ fun TextAndRadio(
         modifier = Modifier
             .fillMaxWidth()
             .padding(4.dp)
-    ) {
+    ) { ->
         Column(
             modifier = Modifier
                 .padding(start = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        ) { ->
             LargeText(
                 text = text,
                 fontSize = 24.sp
@@ -336,15 +331,14 @@ fun TextAndRadio(
                 .fillMaxWidth()
                 .padding(end = 8.dp),
             horizontalAlignment = Alignment.End
-        ) {
-
+        ) { ->
             RadioButton(
                 selected = radioChoice.value == radioID,
                 onClick = {
                     radioChoice.value = radioID
                     enableOtherUI?.value = true
                 },
-                modifier = Modifier.scale(1.75f, 1.75f)
+                modifier = Modifier.scale(scaleX = 1.75f, scaleY = 1.75f)
             )
         }
     }
@@ -371,45 +365,16 @@ fun CenteredContentRow(
 
 @Composable
 fun BackGroundImage(
-    answerGroup: @Composable () -> Unit
+    content: @Composable () -> Unit
 ) {
-    // You can add background image to a Box just by placing it under all other views.
-    // And matchParentSize modifier will stretch it to the parent size.
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) { ->
         Image(
             painterResource(id = R.drawable.rollingsheetmusicbackground),
             contentDescription = "",
-            contentScale = ContentScale.FillBounds, // or some other scale
+            contentScale = ContentScale.FillBounds,
             modifier = Modifier.matchParentSize()
         )
-        answerGroup()
+        content()
     }
 }
 
-/*@Composable
-fun BackGroundImage() {
-    // You can add background image to a Box just by placing it under all other views.
-    // And matchParentSize modifier will stretch it to the parent size.
-    Box(modifier = Modifier.fillMaxWidth()) {
-        Image(
-            painterResource(id = R.drawable.ic_launcher_background),
-            contentDescription = "",
-            contentScale = ContentScale.FillBounds, // or some other scale
-            modifier = Modifier.matchParentSize()
-        )
-        CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
-            IconButton(
-                onClick = { *//*...*//* },
-                modifier = Modifier
-                    .padding(horizontal = 20.dp, vertical = 20.dp)
-                    .fillMaxWidth()
-            ) {
-*//*                Icon(
-                    Icons.Filled.Close,
-                    contentDescription = "stringResource(id = R.string.close)",
-                    modifier = Modifier.align(Alignment.CenterEnd)
-                )*//*
-            }
-        }
-    }
-}*/

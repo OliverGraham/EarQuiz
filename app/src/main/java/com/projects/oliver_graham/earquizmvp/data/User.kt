@@ -12,4 +12,5 @@ data class User(
     val incorrectAnswers: Int = 0
 ) {
     fun totalQuestionsAttempted() = correctAnswers + incorrectAnswers
+    // best average, etc
 }

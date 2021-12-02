@@ -6,13 +6,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.projects.oliver_graham.earquizmvp.data.User
 import com.projects.oliver_graham.earquizmvp.homescreen.ExpandableRow
-import com.projects.oliver_graham.earquizmvp.homescreen.HeaderRow
 
 
 @ExperimentalAnimationApi
@@ -25,18 +23,7 @@ fun LeaderboardScreen(viewModel: LeaderboardScreenViewModel) {
 
     LazyColumn(
         state = listState
-    ){
-        // so header doesn't scroll
-        stickyHeader {
-            Surface(modifier = Modifier.fillParentMaxWidth()) {
-                HeaderRow(
-                    headerTitle = "EarQuiz",
-                    logo = 0,
-                    otherLogo = 0
-                )
-            }
-        }
-
+    ){ ->
         items(
             items = users.value,
             key = { user: User -> user.uid}
