@@ -12,6 +12,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -92,7 +93,8 @@ fun LoginScreen(viewModel: LoginScreenViewModel) {
             }
         }
         CenteredContentRow(padding = 8.dp) { ->
-            LargeButton(onClick = {  }) { ->
+            val falseFacebook = remember { mutableStateOf(value = false) }
+            LargeButton(onClick = {  }, mutableEnabled = falseFacebook) { ->
                 LargeText(text = "(Facebook)")
             }
         }
