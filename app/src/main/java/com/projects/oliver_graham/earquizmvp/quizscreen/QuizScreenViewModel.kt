@@ -31,7 +31,7 @@ class QuizScreenViewModel(
     private val repo = QuestionsRepo
     private val intervalsByHalfStepMap = repo.getIntervalsByHalfStep()
     private val noteList = repo.getNotes()
-    private val urlPath = "http://192.168.4.21:8080/download/test2/"
+    private val urlPath = "http://192.168.4.21:8080/download/tuser1%40gmail.com/eq_patch1/"
 
     val questionNumber: MutableState<Int> = mutableStateOf(1)
     val correctUserAnswers: MutableState<Int> = mutableStateOf(0)

@@ -6,6 +6,11 @@ class NavigationController(
     private val navController: NavController
 ) {
 
+    fun navLoginScreen() {
+        navController.popBackStack()
+        navController.navigate(Screen.LoginScreen.route)
+    }
+
     fun navHomeScreenNoBack() {
         navController.navigate(Screen.HomeScreen.route) { ->
             // so back button doesn't go back to login flow

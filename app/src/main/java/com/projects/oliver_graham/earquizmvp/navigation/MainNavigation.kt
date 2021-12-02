@@ -5,14 +5,24 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -27,6 +37,7 @@ import com.projects.oliver_graham.earquizmvp.homescreen.HomeScreenViewModel
 import com.projects.oliver_graham.earquizmvp.leaderboardscreen.LeaderboardScreenViewModel
 import com.projects.oliver_graham.earquizmvp.quizscreen.QuizScreenViewModel
 import com.projects.oliver_graham.earquizmvp.ui.BackGroundImage
+import com.projects.oliver_graham.earquizmvp.ui.LargeText
 
 @ExperimentalMaterialApi
 @ExperimentalFoundationApi
@@ -63,7 +74,11 @@ fun MainNavigation(
     BackGroundImage {
         Scaffold(
             topBar = {
-                     TopBar(firebaseController = firebaseController)
+                     TopBar(
+                         navigationController = navWrapper,
+                         firebaseController = firebaseController,
+                         atLoginScreen = showBottomNavBar.value
+                     )
             },
             bottomBar = {
                     BottomBar(
@@ -107,33 +122,131 @@ fun MainNavigation(
 
 @Composable
 fun TopBar(
-    firebaseController: FirebaseController  // will need later
+    navigationController: NavigationController,
+    firebaseController: FirebaseController,
+    atLoginScreen: Boolean
 ) {
+    val expanded = remember { mutableStateOf(value = false) }
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceAround
     ) { ->
         Image(
-            painterResource(id = R.drawable.eq_onesixnine),
+            painterResource(id = R.drawable.earquiz_header_logo),
             contentDescription = "",
             modifier = Modifier.padding(4.dp)
         )
         Column { ->
             Icon(
                 Icons.Rounded.AccountCircle,
-                modifier = Modifier.size(40.dp),
+                modifier = Modifier
+                    .size(40.dp)
+                    .clickable { expanded.value = true },
                 contentDescription = "",
                 tint = MaterialTheme.colors.primary
             )
+            DropdownMenu(
+                modifier = Modifier.background(color = MaterialTheme.colors.background),
+                expanded = expanded.value,
+                onDismissRequest = { expanded.value = false }
+            ) { ->
+                if (atLoginScreen) {
+
+                    if (firebaseController.isUserLoggedIn())
+                        LoggedInTextName(firebaseController.getUserDocument()?.userName)
+
+                    DropdownIcon(
+                        rowClick = { expanded.value = false },
+                        icon = Icons.Rounded.Psychology,
+                        iconClick = {
+                            expanded.value = false
+                            firebaseController.logOutUserFromFirebase()
+                            firebaseController.logOutUserFromGoogle()
+                        }
+                    )
+                    DropdownIcon(
+                        rowClick = { expanded.value = false },
+                        icon = Icons.Rounded.ZoomOut,
+                        iconClick = {
+                            expanded.value = false
+                            firebaseController.logOutUserFromFirebase()
+                            firebaseController.logOutUserFromGoogle()
+                            navigationController.navLoginScreen()
+                        }
+                    )
+
+                }
+            }
+        }
+
+    }
+}
+
+@Composable
+private fun DropdownIcon(
+    rowClick: () -> Unit,
+    icon: ImageVector,
+    iconClick: () -> Unit
+) {
+    DropdownMenuItem(
+        onClick = { rowClick() }
+    ) { ->
+        Icon(
+            icon,
+            modifier = Modifier
+                .size(36.dp)
+                .weight(weight = 1f)
+                .clickable { iconClick() },
+            contentDescription = "",
+            tint = MaterialTheme.colors.onPrimary
+        )
+    }
+}
+
+
+@Composable
+private fun LoggedInTextName(userName: String?) {
+    val fancyUserName = buildAnnotatedString { ->
+        withStyle(style = SpanStyle(color = MaterialTheme.colors.primary)
+        ) { ->
+            append("Logged in as: ")
+        }
+
+        if (userName != null)
+            pushStringAnnotation(
+                tag = userName,
+                annotation = userName
+            )
+
+        withStyle(style = SpanStyle(color = MaterialTheme.colors.onPrimary)
+        ) { ->
+            if (userName != null)
+                append(userName)
         }
     }
+
+    Text(
+        modifier = Modifier.padding(4.dp),
+        text = fancyUserName,
+        color = MaterialTheme.colors.primary
+    )
+}
+
+
+@Composable
+fun DropDownLogoutIcon(
+    onClick: () -> Unit,
+    expanded: MutableState<Boolean>,
+    content: @Composable () -> Unit
+) {
+
 }
 
 
 @ExperimentalAnimationApi
 @Composable
-fun BottomBar(
+private fun BottomBar(
     navController: NavController,
     screenList: List<Screen>,
     showBottomNavBar: Boolean,
