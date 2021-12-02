@@ -1,7 +1,6 @@
 package com.projects.oliver_graham.earquizmvp.authentication
 
 
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -17,7 +16,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,9 +23,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.projects.oliver_graham.earquizmvp.ui.*
-import com.projects.oliver_graham.earquizmvp.ui.CenteredContentRow
 import com.projects.oliver_graham.earquizmvp.R
-
 
 @Composable
 fun LoginScreen(viewModel: LoginScreenViewModel) {
@@ -91,12 +87,13 @@ fun LoginScreen(viewModel: LoginScreenViewModel) {
            LargeButton(onClick = {
                 googleSignInActivity.launch(viewModel.getGoogleSignInIntent())
             }) { ->
-                LargeText(text = "GOOGLE")
+               Image(painterResource(id = R.drawable.googleg_standard_color_18), contentDescription = "")
+               LargeText(text = "oogle")
             }
         }
         CenteredContentRow(padding = 8.dp) { ->
             LargeButton(onClick = {  }) { ->
-                LargeText(text = "(FACEBOOK)")
+                LargeText(text = "(Facebook)")
             }
         }
         Divider(modifier = Modifier.padding(8.dp))
@@ -114,14 +111,14 @@ fun LoginScreen(viewModel: LoginScreenViewModel) {
         ) { ->
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                   // .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.End
             ) { ->
 
-                MediumButton(onClick = { viewModel.onSkipButtonClick() }) {
+                MediumButton(onClick = { viewModel.onSkipButtonClick() }) { ->
                     LargeText(text = "Skip")
-                    Icon(Icons.Rounded.PlayArrow, "")
+                    Icon(Icons.Rounded.PlayArrow, contentDescription = "")
                 }
             }
            // Spacer(modifier = Modifier.padding(8.dp))

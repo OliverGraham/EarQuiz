@@ -8,18 +8,16 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.Login
+import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -37,7 +35,6 @@ import com.projects.oliver_graham.earquizmvp.homescreen.HomeScreenViewModel
 import com.projects.oliver_graham.earquizmvp.leaderboardscreen.LeaderboardScreenViewModel
 import com.projects.oliver_graham.earquizmvp.quizscreen.QuizScreenViewModel
 import com.projects.oliver_graham.earquizmvp.ui.BackGroundImage
-import com.projects.oliver_graham.earquizmvp.ui.LargeText
 
 @ExperimentalMaterialApi
 @ExperimentalFoundationApi
