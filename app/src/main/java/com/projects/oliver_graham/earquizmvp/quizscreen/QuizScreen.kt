@@ -1,39 +1,33 @@
 package com.projects.oliver_graham.earquizmvp.quizscreen
 
 
-import android.graphics.Color.alpha
-import android.graphics.drawable.Icon
-import androidx.compose.animation.*
-import androidx.compose.foundation.*
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import com.projects.oliver_graham.earquizmvp.R
 import com.projects.oliver_graham.earquizmvp.data.QuizQuestion
 import com.projects.oliver_graham.earquizmvp.ui.*
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 
 @ExperimentalMaterialApi
@@ -41,9 +35,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun QuizScreen(viewModel: QuizScreenViewModel) {
 
-    val scope = rememberCoroutineScope()
-
-    // entire body
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -116,9 +107,7 @@ fun QuizScreen(viewModel: QuizScreenViewModel) {
                 onLeaderboardButtonClick = {
                     viewModel.resetQuizScreen()
                     viewModel.navToLeaderboardScreen()
-                },
-                navButton1 = { viewModel.navToHomeScreen() },
-                navButton2 = { viewModel.navToLeaderboardScreen() }
+                }
             )
         }
     }
@@ -232,19 +221,23 @@ private fun AnswerDialog(
                 }
 
                 CenteredContentRow(
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) { ->
                     Image(
                         painter = painterResource(id = clefsResourceId),
-                        contentDescription = null
+                        contentDescription = null,
+                        contentScale = ContentScale.None
                     )
                     Image(
                         painter = painterResource(id = noteOneResourceId),
-                        contentDescription = null
+                        contentDescription = null,
+                        contentScale = ContentScale.None
                     )
                     Image(
                         painter = painterResource(id = noteTwoResourceId),
-                        contentDescription = null
+                        contentDescription = null,
+                        contentScale = ContentScale.None
                     )
                 }
             }
@@ -267,7 +260,8 @@ private fun AnswerDialog(
                     buttonIcon()
                 }
             }
-        }
+        },
+        backgroundColor = MaterialTheme.colors.background
     )
 }
 
@@ -280,9 +274,7 @@ private fun FinishedDialog(
     incorrectText: String,
     numberOfSoundsPlayedText: String,
     onHomeButtonClick: () -> Unit,
-    onLeaderboardButtonClick: () -> Unit,
-    navButton1: @Composable () -> Unit,
-    navButton2: @Composable () -> Unit
+    onLeaderboardButtonClick: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = { dismissRequest() },
@@ -336,7 +328,8 @@ private fun FinishedDialog(
                     }
                 )
             }
-        }
+        },
+        backgroundColor = MaterialTheme.colors.background
     )
 }
 

@@ -142,7 +142,7 @@ fun TopBar(
                 Icons.Rounded.AccountCircle,
                 modifier = Modifier
                     .size(40.dp)
-                    .clickable { expanded.value = true },
+                    .clickable { if (atLoginScreen) expanded.value = true },
                 contentDescription = "",
                 tint = MaterialTheme.colors.primary
             )
@@ -153,21 +153,22 @@ fun TopBar(
             ) { ->
                 if (atLoginScreen) {
 
-                    if (firebaseController.isUserLoggedIn())
+                    if (firebaseController.isUserLoggedIn()) {
                         LoggedInTextName(firebaseController.getUserDocument()?.userName)
 
+                        DropdownIcon(
+                            rowClick = { expanded.value = false },
+                            icon = Icons.Rounded.Logout,
+                            iconClick = {
+                                expanded.value = false
+                                firebaseController.logOutUserFromFirebase()
+                                firebaseController.logOutUserFromGoogle()
+                            }
+                        )
+                    }
                     DropdownIcon(
                         rowClick = { expanded.value = false },
-                        icon = Icons.Rounded.Psychology,
-                        iconClick = {
-                            expanded.value = false
-                            firebaseController.logOutUserFromFirebase()
-                            firebaseController.logOutUserFromGoogle()
-                        }
-                    )
-                    DropdownIcon(
-                        rowClick = { expanded.value = false },
-                        icon = Icons.Rounded.ZoomOut,
+                        icon = Icons.Rounded.Login,
                         iconClick = {
                             expanded.value = false
                             firebaseController.logOutUserFromFirebase()
