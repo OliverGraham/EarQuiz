@@ -27,11 +27,11 @@ class QuizScreenViewModel(
     ) : ViewModel() {
 
     val quizName = "Intervals"          // get quiz name from nav?
-    val totalQuestions = 2              // could pass different amount later
+    val totalQuestions = 3              // could pass different amount later
     private val repo = QuestionsRepo
     private val intervalsByHalfStepMap = repo.getIntervalsByHalfStep()
     private val noteList = repo.getNotes()
-    private val urlPath = "http://192.168.4.21:8080/download/tuser1%40gmail.com/eq_patch1/"
+    private val urlPath = "http://192.168.4.21:8080/download/tuser1%40gmail.com/eq_patch2/"
 
     val questionNumber: MutableState<Int> = mutableStateOf(1)
     val correctUserAnswers: MutableState<Int> = mutableStateOf(0)
@@ -49,7 +49,6 @@ class QuizScreenViewModel(
 
     val radioGroup: SnapshotStateList<QuizQuestion> = mutableStateListOf()
 
-    //private var appContext: Application? = null
     var player1: MediaPlayer? = null
     var player2: MediaPlayer? = null
 
