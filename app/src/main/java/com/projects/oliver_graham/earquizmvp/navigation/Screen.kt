@@ -11,7 +11,6 @@ const val HOME_INDEX = 0
 const val QUIZ_INDEX = 1
 const val LEADERBOARD_INDEX = 2
 
-
 sealed class Screen(
     val route: String,
     val icon: ImageVector = Icons.Rounded.Home,

@@ -16,10 +16,12 @@ import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -52,13 +54,7 @@ fun MainNavigation(
     val showBottomNavBar: MutableState<Boolean> = remember { mutableStateOf(value = false) }
 
     // tracks nav bar button presses, to keep animation in-sync
-    val navItemSelectedIndex: MutableState<Int> = remember { mutableStateOf(0) }
-
-    // FOR TESTING ONLY
-    /*if (firebaseController.isUserLoggedIn()) {
-        firebaseController.logOutUserFromFirebase()
-        firebaseController.logOutUserFromGoogle()
-    }*/
+    val navItemSelectedIndex: MutableState<Int> = remember { mutableStateOf(value = 0) }
 
     val loginScreenViewModel = remember { LoginScreenViewModel(navWrapper, firebaseController) }
     val createAccountScreenViewModel =
@@ -151,7 +147,10 @@ fun TopBar(
                 if (atLoginScreen) {
 
                     if (firebaseController.isUserLoggedIn()) {
+
+                        AccountIconInnerText(text = "Logged in as:")
                         LoggedInTextName(firebaseController.getUserDocument()?.userName)
+                        Divider(modifier = Modifier.padding(1.dp))
 
                         DropdownIcon(
                             rowClick = { expanded.value = false },
@@ -162,6 +161,7 @@ fun TopBar(
                                 firebaseController.logOutUserFromGoogle()
                             }
                         )
+                        Divider(modifier = Modifier.padding(1.dp))
                     }
                     DropdownIcon(
                         rowClick = { expanded.value = false },
@@ -179,6 +179,21 @@ fun TopBar(
         }
 
     }
+}
+
+@Composable
+private fun AccountIconInnerText(
+    text: String,
+    color: Color = Color.Unspecified
+) {
+    Text(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp),
+        text = text,
+        color = color,
+        textAlign = TextAlign.Center
+    )
 }
 
 @Composable
@@ -202,44 +217,18 @@ private fun DropdownIcon(
     }
 }
 
-
 @Composable
 private fun LoggedInTextName(userName: String?) {
     val fancyUserName = buildAnnotatedString { ->
-        withStyle(style = SpanStyle(color = MaterialTheme.colors.primary)
-        ) { ->
-            append("Logged in as: ")
-        }
-
-        if (userName != null)
-            pushStringAnnotation(
-                tag = userName,
-                annotation = userName
-            )
-
         withStyle(style = SpanStyle(color = MaterialTheme.colors.onPrimary)
         ) { ->
             if (userName != null)
                 append(userName)
         }
     }
-
-    Text(
-        modifier = Modifier.padding(4.dp),
-        text = fancyUserName,
-        color = MaterialTheme.colors.primary
-    )
+    AccountIconInnerText(text = fancyUserName.toString(), color = MaterialTheme.colors.onPrimary)
 }
 
-
-@Composable
-fun DropDownLogoutIcon(
-    onClick: () -> Unit,
-    expanded: MutableState<Boolean>,
-    content: @Composable () -> Unit
-) {
-
-}
 
 
 @ExperimentalAnimationApi

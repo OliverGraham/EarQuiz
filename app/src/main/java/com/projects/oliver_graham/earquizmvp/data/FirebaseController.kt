@@ -10,6 +10,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.projects.oliver_graham.earquizmvp.navigation.NavigationController
@@ -75,7 +76,7 @@ class FirebaseController(
                     initializeUser()
                     navController.navHomeScreenPopBackstack()
                 } else
-                    toastMessage(context = context, "Invalid username/password")
+                    toastMessage(context = context, message = "Invalid username/password")
             }
 
     }
@@ -111,7 +112,18 @@ class FirebaseController(
         auth.signInWithCredential(credential)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    if (auth.currentUser != null) {
+                    val authUser = auth.currentUser
+                    if (authUser != null) {
+                        // TODO: Refactor this into initializeUser()
+                        firestore.collection(USERS_COLLECTION).document(authUser.uid).get()
+                            .addOnSuccessListener { user ->
+                                if (!user.exists()) {
+                                    val email = authUser.email.toString()
+                                    saveAuthenticatedUserAsNewDocument(
+                                        authUser, trimEmail(email), email)
+                                }
+                            }
+
                         initializeUser()
                         navController.navHomeScreenPopBackstack()
                     }
@@ -119,6 +131,12 @@ class FirebaseController(
                     toastMessage(context, message = "Unable to sign in")
                 }
             }
+    }
+
+
+    private fun trimEmail(email: String): String {
+        val atIndex = email.indexOf(string = "@")
+        return email.substring(startIndex = 0, endIndex = atIndex)
     }
 
     private fun saveAuthenticatedUserAsNewDocument(user: FirebaseUser, userName: String, email: String) {
@@ -150,9 +168,10 @@ class FirebaseController(
         if (authenticatedUser != null) {
             firestore.collection(USERS_COLLECTION).document(authenticatedUser.uid).get()
                 .addOnSuccessListener { user ->
-                    if (user != null)
+                    if (user != null) {
                         // set the live data for later observation
                         currentUserDocument.value = user.toObject(User::class.java)
+                    }
                 }
         }
     }

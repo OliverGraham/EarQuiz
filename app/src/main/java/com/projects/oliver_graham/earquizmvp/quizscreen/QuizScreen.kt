@@ -196,7 +196,7 @@ private fun AnswerDialog(
                 TextWithLeadingIcon(
                     text = correctAnswerText,
                     Icons.Default.Check,
-                    tint = Color(0xFF689F38)
+                    tint = Color(color = 0xFF689F38)
                 )
                 if (incorrectAnswerText != null) {
                     TextWithLeadingIcon(
@@ -306,7 +306,6 @@ private fun FinishedDialog(
             ) { ->
                 MediumButton(
                     onClick = { onHomeButtonClick() },
-                    //mutableEnabled = ,
                     content = { ->
                         LargeText(
                             text = "Home",
@@ -318,7 +317,6 @@ private fun FinishedDialog(
                 Spacer(modifier = Modifier.padding(4.dp))
                 MediumButton(
                     onClick = { onLeaderboardButtonClick() },
-                    //mutableEnabled = ,
                     content = { ->
                         LargeText(
                             text = "Leaderboard",
@@ -363,7 +361,7 @@ private fun TopRow(
 
             LargeText(
                 text = "+ $correctUserAnswers",
-                color = Color(0xFF689F38)   // regular green too bright
+                color = Color(color = 0xFF689F38)   // regular green too bright
             )
             Spacer(modifier = Modifier.padding(4.dp))
 
@@ -392,7 +390,7 @@ private fun PlayIntervalButtonRow(
         LargeButton(
             onClick = { playSound() },
             mutableEnabled = playButtonEnabled,
-            content = {
+            content = { ->
                 LargeText(
                     text = "Play Interval",
                     fontSize = 20.sp

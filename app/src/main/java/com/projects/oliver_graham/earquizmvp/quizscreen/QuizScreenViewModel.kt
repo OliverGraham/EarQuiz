@@ -1,7 +1,5 @@
 package com.projects.oliver_graham.earquizmvp.quizscreen
 
-
-
 import android.media.MediaPlayer
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
@@ -33,16 +31,16 @@ class QuizScreenViewModel(
     private val noteList = repo.getNotes()
     private val urlPath = "http://192.168.4.21:8080/download/tuser1%40gmail.com/eq_patch2/"
 
-    val questionNumber: MutableState<Int> = mutableStateOf(1)
-    val correctUserAnswers: MutableState<Int> = mutableStateOf(0)
-    val incorrectUserAnswers: MutableState<Int> = mutableStateOf(0)
-    val numberOfIntervalTaps: MutableState<Int> = mutableStateOf(0)
-    val currentUserChoice: MutableState<Int> = mutableStateOf(0)
-    val submitButtonEnabled: MutableState<Boolean> = mutableStateOf(false)
-    val playButtonEnabled: MutableState<Boolean> = mutableStateOf(true)
-    val nextButtonEnabled: MutableState<Boolean> = mutableStateOf(true)
-    val showAnswerDialog: MutableState<Boolean> = mutableStateOf(false)
-    val showFinishedDialog: MutableState<Boolean> = mutableStateOf(false)
+    val questionNumber: MutableState<Int> = mutableStateOf(value = 1)
+    val correctUserAnswers: MutableState<Int> = mutableStateOf(value = 0)
+    val incorrectUserAnswers: MutableState<Int> = mutableStateOf(value = 0)
+    val numberOfIntervalTaps: MutableState<Int> = mutableStateOf(value = 0)
+    val currentUserChoice: MutableState<Int> = mutableStateOf(value = 0)
+    val submitButtonEnabled: MutableState<Boolean> = mutableStateOf(value = false)
+    val playButtonEnabled: MutableState<Boolean> = mutableStateOf(value = true)
+    val nextButtonEnabled: MutableState<Boolean> = mutableStateOf(value = true)
+    val showAnswerDialog: MutableState<Boolean> = mutableStateOf(value = false)
+    val showFinishedDialog: MutableState<Boolean> = mutableStateOf(value = false)
 
     val currentCorrectAnswer: MutableState<QuizQuestion> = mutableStateOf(
         QuizQuestion(id = 0, text = "", firstNote = 0, secondNote = 0))
@@ -170,21 +168,11 @@ class QuizScreenViewModel(
     private fun saveResultsToFirestore() {
 
         if (firebaseController.isUserLoggedIn()) {
-         //   val currentUser = firebaseController.getUserDocument()
             val currentUser = firebaseController.getUserDocument()
             val updatedUser = currentUser?.copy(
                 correctAnswers = currentUser.correctAnswers + correctUserAnswers.value,
                 incorrectAnswers = currentUser.incorrectAnswers + incorrectUserAnswers.value
             )
-
-            /*firebaseController.fullyUpdateDocument(
-                uid = updatedUser!!.uid,
-                userName = updatedUser.userName,
-                email = updatedUser.email,
-                correctAnswers = updatedUser.correctAnswers,
-                incorrectAnswers = updatedUser.incorrectAnswers
-            )*/
-
             firebaseController.updateUserDocument(updatedUser)
         }
         // TODO: else "no results saved, create account to compare your score with others"
