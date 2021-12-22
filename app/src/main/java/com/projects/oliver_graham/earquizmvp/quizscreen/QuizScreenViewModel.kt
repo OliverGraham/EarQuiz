@@ -1,61 +1,55 @@
 package com.projects.oliver_graham.earquizmvp.quizscreen
 
-import android.media.MediaPlayer
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import java.io.IOException
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.projects.oliver_graham.earquizmvp.R
-import com.projects.oliver_graham.earquizmvp.data.*
+import com.projects.oliver_graham.earquizmvp.data.FirebaseController
+import com.projects.oliver_graham.earquizmvp.data.Note
+import com.projects.oliver_graham.earquizmvp.data.QuestionsRepo
+import com.projects.oliver_graham.earquizmvp.data.QuizQuestion
 import com.projects.oliver_graham.earquizmvp.navigation.HOME_INDEX
 import com.projects.oliver_graham.earquizmvp.navigation.LEADERBOARD_INDEX
 import com.projects.oliver_graham.earquizmvp.navigation.NavigationController
+import com.projects.oliver_graham.earquizmvp.sounds.SoundPlayer
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class QuizScreenViewModel(
     private val navController: NavigationController,
     private val firebaseController: FirebaseController,
     private val isTakingQuiz: MutableState<Boolean>,
-    private val navItemSelectedIndex: MutableState<Int>
-    ) : ViewModel() {
+    private val navItemSelectedIndex: MutableState<Int>,
+    private val soundPlayer: SoundPlayer
+) : ViewModel() {
 
     val quizName = "Intervals"          // get quiz name from nav?
-    val totalQuestions = 3              // could pass different amount later
+    val totalQuestions = 5              // could pass different amount later
     private val repo = QuestionsRepo
     private val intervalsByHalfStepMap = repo.getIntervalsByHalfStep()
     private val noteList = repo.getNotes()
-    private val urlPath = "http://192.168.4.21:8080/download/tuser1%40gmail.com/eq_patch2/"
 
     val questionNumber: MutableState<Int> = mutableStateOf(value = 1)
     val correctUserAnswers: MutableState<Int> = mutableStateOf(value = 0)
     val incorrectUserAnswers: MutableState<Int> = mutableStateOf(value = 0)
     val numberOfIntervalTaps: MutableState<Int> = mutableStateOf(value = 0)
     val currentUserChoice: MutableState<Int> = mutableStateOf(value = 0)
+
     val submitButtonEnabled: MutableState<Boolean> = mutableStateOf(value = false)
     val playButtonEnabled: MutableState<Boolean> = mutableStateOf(value = true)
     val nextButtonEnabled: MutableState<Boolean> = mutableStateOf(value = true)
     val showAnswerDialog: MutableState<Boolean> = mutableStateOf(value = false)
     val showFinishedDialog: MutableState<Boolean> = mutableStateOf(value = false)
 
-    val currentCorrectAnswer: MutableState<QuizQuestion> = mutableStateOf(
-        QuizQuestion(id = 0, text = "", firstNote = 0, secondNote = 0))
-
+    val currentCorrectAnswer: MutableState<QuizQuestion> = mutableStateOf(value = QuizQuestion())
     val radioGroup: SnapshotStateList<QuizQuestion> = mutableStateListOf()
 
-    var player1: MediaPlayer? = null
-    var player2: MediaPlayer? = null
-
     init {
-        viewModelScope.launch { ->
-            player1 = MediaPlayer()
-            player2 = MediaPlayer()
-            resetQuizPage()
-        }
+        resetQuizPage()
     }
 
     fun resetQuizScreen() {
@@ -74,12 +68,9 @@ class QuizScreenViewModel(
         resetQuizPage()
     }
 
-    fun emptyRadioGroup() = radioGroup.removeRange(0, radioGroup.size)
+    private fun emptyRadioGroup() = radioGroup.removeRange(0, radioGroup.size)
 
-    fun resetQuizPage() {
-
-        player1?.reset()
-        player2?.reset()
+    private fun resetQuizPage() {
 
         // unselect radio button, disable submit button and empty the four random choices
         currentUserChoice.value = 0
@@ -90,8 +81,10 @@ class QuizScreenViewModel(
         val twoCurrentNotes: List<Note> = createTwoRandomNotes()
         val noteOne = twoCurrentNotes[0]
         val noteTwo = twoCurrentNotes[1]
-        val keyInterval: Int = kotlin.math.abs(noteOne.id - noteTwo.id)
+        val keyInterval: Int = kotlin.math.abs(n = noteOne.pitch - noteTwo.pitch)
         val randomIntervals: List<Int> = getRandomIntervals(keyInterval)
+
+        soundPlayer.setCurrentSequence(note1 = noteOne.pitch, note2 = noteTwo.pitch)
 
         currentCorrectAnswer.value = QuizQuestion(
             id = keyInterval,
@@ -109,10 +102,6 @@ class QuizScreenViewModel(
             )
         }
 
-        setMediaPlayers(
-            noteOne = urlPath + noteOne.soundPath,
-            noteTwo = urlPath + noteTwo.soundPath
-        )
         radioGroup.shuffle()
     }
 
@@ -128,9 +117,9 @@ class QuizScreenViewModel(
         if (countTowardScore)
             numberOfIntervalTaps.value++
 
-        player1?.start()
+        soundPlayer.playNote1()
         delay(timeMillis = 1000)
-        player2?.start()
+        soundPlayer.playNote2()
         delay(timeMillis = 1000)
 
         playButtonEnabled.value = true
@@ -176,23 +165,6 @@ class QuizScreenViewModel(
             firebaseController.updateUserDocument(updatedUser)
         }
         // TODO: else "no results saved, create account to compare your score with others"
-
-    }
-
-    private fun setMediaPlayers(noteOne: String, noteTwo: String) {
-        try {
-            player1?.setDataSource(noteOne)
-            player1?.prepareAsync()
-
-            player2?.setDataSource(noteTwo)
-            player2?.prepareAsync()
-
-            // TODO: doesn't catch, even with error
-        } catch (ioException: IOException) {
-            //Toast.makeText(appContext?.applicationContext, "Unable to connect to sound database." +
-            //        " please check internet connection.", Toast.LENGTH_SHORT).show()
-            // maybe log exception later
-        }
     }
 
     // avoids mixing sharps and flats for the images
@@ -218,7 +190,7 @@ class QuizScreenViewModel(
         val randomNoteTwo = noteList[Random.nextInt(size)]
 
         if (accidentalPreference(randomNoteOne.accidental, randomNoteTwo.accidental))
-            if (kotlin.math.abs(randomNoteOne.id - randomNoteTwo.id) in 1..12)
+            if (kotlin.math.abs(n = randomNoteOne.pitch - randomNoteTwo.pitch) in 1..12)
                 return listOf(randomNoteOne, randomNoteTwo)
 
         return createTwoRandomNotes()
@@ -236,6 +208,5 @@ class QuizScreenViewModel(
         }
         return randomIntervalList
     }
-
 }
 

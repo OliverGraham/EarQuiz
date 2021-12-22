@@ -1,6 +1,7 @@
 package com.projects.oliver_graham.earquizmvp.navigation
 
 import android.content.Context
+import android.media.SoundPool
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -36,6 +37,7 @@ import com.projects.oliver_graham.earquizmvp.data.FirebaseController
 import com.projects.oliver_graham.earquizmvp.homescreen.HomeScreenViewModel
 import com.projects.oliver_graham.earquizmvp.leaderboardscreen.LeaderboardScreenViewModel
 import com.projects.oliver_graham.earquizmvp.quizscreen.QuizScreenViewModel
+import com.projects.oliver_graham.earquizmvp.sounds.SoundPlayer
 import com.projects.oliver_graham.earquizmvp.ui.BackGroundImage
 
 @ExperimentalMaterialApi
@@ -43,26 +45,35 @@ import com.projects.oliver_graham.earquizmvp.ui.BackGroundImage
 @ExperimentalAnimationApi
 @Composable
 fun MainNavigation(
-    context: Context
+    context: Context,
+    soundPlayer: SoundPlayer
 ) {
     val navController = rememberAnimatedNavController()
     val navWrapper = remember { NavigationController(navController) }
     val firebaseController = remember { FirebaseController(navWrapper, context) }
 
-    // state that needs to shared across app
+    // state that needs to be shared across app
     val isTakingQuiz: MutableState<Boolean> = remember { mutableStateOf(value = false) }
     val showBottomNavBar: MutableState<Boolean> = remember { mutableStateOf(value = false) }
 
     // tracks nav bar button presses, to keep animation in-sync
     val navItemSelectedIndex: MutableState<Int> = remember { mutableStateOf(value = 0) }
 
-    val loginScreenViewModel = remember { LoginScreenViewModel(navWrapper, firebaseController) }
-    val createAccountScreenViewModel =
-        remember { CreateAccountScreenViewModel(navWrapper, firebaseController) }
-    val homeScreenViewModel = remember { HomeScreenViewModel(navWrapper, isTakingQuiz, navItemSelectedIndex) }
-    val quizScreenViewModel = remember { QuizScreenViewModel(navWrapper, firebaseController, isTakingQuiz, navItemSelectedIndex) }
-    val leaderboardScreenViewModel =
-        remember { LeaderboardScreenViewModel(navWrapper, firebaseController, navItemSelectedIndex) }
+    val loginScreenViewModel = remember {
+        LoginScreenViewModel(navWrapper, firebaseController)
+    }
+    val createAccountScreenViewModel = remember {
+        CreateAccountScreenViewModel(navWrapper, firebaseController)
+    }
+    val homeScreenViewModel = remember {
+        HomeScreenViewModel(navWrapper, isTakingQuiz, navItemSelectedIndex)
+    }
+    val quizScreenViewModel = remember {
+        QuizScreenViewModel(navWrapper, firebaseController, isTakingQuiz, navItemSelectedIndex, soundPlayer)
+    }
+    val leaderboardScreenViewModel = remember {
+        LeaderboardScreenViewModel(navWrapper, firebaseController, navItemSelectedIndex)
+    }
 
     BackGroundImage {
         Scaffold(

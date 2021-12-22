@@ -9,8 +9,10 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
+import androidx.compose.ui.graphics.Color
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.projects.oliver_graham.earquizmvp.navigation.MainNavigation
+import com.projects.oliver_graham.earquizmvp.sounds.SoundPlayer
 import com.projects.oliver_graham.earquizmvp.ui.theme.EarQuizMVPTheme
 
 class MainActivity : ComponentActivity() {
@@ -30,7 +32,10 @@ class MainActivity : ComponentActivity() {
                 systemUiController.setStatusBarColor (
                     color = MaterialTheme.colors.primary
                 )
-                MainNavigation(context = this)
+                systemUiController.setNavigationBarColor(
+                    color = MaterialTheme.colors.background
+                )
+                MainNavigation(context = this, SoundPlayer(application))
             }
         }
     }
