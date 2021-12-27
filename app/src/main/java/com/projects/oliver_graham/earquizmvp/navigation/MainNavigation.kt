@@ -9,6 +9,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
@@ -17,7 +19,9 @@ import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -25,6 +29,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -34,6 +39,7 @@ import com.projects.oliver_graham.earquizmvp.R
 import com.projects.oliver_graham.earquizmvp.authentication.CreateAccountScreenViewModel
 import com.projects.oliver_graham.earquizmvp.authentication.LoginScreenViewModel
 import com.projects.oliver_graham.earquizmvp.data.FirebaseController
+import com.projects.oliver_graham.earquizmvp.data.quiz.Quiz
 import com.projects.oliver_graham.earquizmvp.homescreen.HomeScreenViewModel
 import com.projects.oliver_graham.earquizmvp.leaderboardscreen.LeaderboardScreenViewModel
 import com.projects.oliver_graham.earquizmvp.quizscreen.QuizScreenViewModel
@@ -54,26 +60,14 @@ fun MainNavigation(
 
     // state that needs to be shared across app
     val isTakingQuiz: MutableState<Boolean> = remember { mutableStateOf(value = false) }
-    val showBottomNavBar: MutableState<Boolean> = remember { mutableStateOf(value = false) }
+    val showBottomNavBar: MutableState<Boolean> = remember { mutableStateOf(value = false) }    // TODO Add this state to navWrapper
+    val quizSelectedIndex: MutableState<Int> = remember { mutableStateOf(value = 0) }
+    val quizController = remember { Quiz }
+    val isQuizInProgress: MutableState<Boolean> = remember { mutableStateOf(value = false) }
+   // val quizController: MutableState<Quiz.Companion> = remember { mutableStateOf(Quiz) }
 
     // tracks nav bar button presses, to keep animation in-sync
     val navItemSelectedIndex: MutableState<Int> = remember { mutableStateOf(value = 0) }
-
-    val loginScreenViewModel = remember {
-        LoginScreenViewModel(navWrapper, firebaseController)
-    }
-    val createAccountScreenViewModel = remember {
-        CreateAccountScreenViewModel(navWrapper, firebaseController)
-    }
-    val homeScreenViewModel = remember {
-        HomeScreenViewModel(navWrapper, isTakingQuiz, navItemSelectedIndex)
-    }
-    val quizScreenViewModel = remember {
-        QuizScreenViewModel(navWrapper, firebaseController, isTakingQuiz, navItemSelectedIndex, soundPlayer)
-    }
-    val leaderboardScreenViewModel = remember {
-        LeaderboardScreenViewModel(navWrapper, firebaseController, navItemSelectedIndex)
-    }
 
     BackGroundImage {
         Scaffold(
@@ -93,13 +87,35 @@ fun MainNavigation(
                             Screen.LeaderboardScreen
                         ),
                         showBottomNavBar = showBottomNavBar.value,
-                        isTakingQuiz = isTakingQuiz.value,
+                        //isTakingQuiz = isTakingQuiz.value,
+                        isTakingQuiz = quizController.getQuizInProgress().isInProgress,
                         navItemSelectedIndex = navItemSelectedIndex
                     )
             },
             backgroundColor = MaterialTheme.colors.background.copy(alpha = 0.925f),
 
         ) { innerPadding ->
+
+            // all ViewModels instantiated
+            val loginScreenViewModel = remember {
+                LoginScreenViewModel(navWrapper, firebaseController)
+            }
+            val createAccountScreenViewModel = remember {
+                CreateAccountScreenViewModel(navWrapper, firebaseController)
+            }
+            val homeScreenViewModel = remember {
+                HomeScreenViewModel(
+                    navWrapper, isTakingQuiz, quizSelectedIndex, navItemSelectedIndex, quizController)
+            }
+            val quizScreenViewModel = remember {
+                QuizScreenViewModel(
+                    navWrapper, firebaseController, isTakingQuiz,
+                    quizSelectedIndex, navItemSelectedIndex, soundPlayer, quizController
+                )
+            }
+            val leaderboardScreenViewModel = remember {
+                LeaderboardScreenViewModel(navWrapper, firebaseController, navItemSelectedIndex)
+            }
 
             AnimatedNavHost(
                 navController = navController,
@@ -146,6 +162,7 @@ fun TopBar(
                 Icons.Rounded.AccountCircle,
                 modifier = Modifier
                     .size(40.dp)
+                    .shadow(elevation = 20.dp, shape = CircleShape)
                     .clickable { if (atLoginScreen) expanded.value = true },
                 contentDescription = "",
                 tint = MaterialTheme.colors.primary
@@ -248,7 +265,7 @@ private fun BottomBar(
     navController: NavController,
     screenList: List<Screen>,
     showBottomNavBar: Boolean,
-    isTakingQuiz: Boolean,
+    isTakingQuiz: Boolean?,
     navItemSelectedIndex: MutableState<Int>
 ) {
 
@@ -271,7 +288,7 @@ private fun BottomBar(
                     label = { screen.route },
                     selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                     onClick = {
-                        if (isTakingQuiz)
+                        if (isTakingQuiz == true)
                             bottomNavClick(
                                 navController = navController,
                                 route = screen.route,

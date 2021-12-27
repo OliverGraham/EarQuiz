@@ -9,7 +9,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
-import androidx.compose.ui.graphics.Color
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.projects.oliver_graham.earquizmvp.navigation.MainNavigation
 import com.projects.oliver_graham.earquizmvp.sounds.SoundPlayer
@@ -35,7 +34,7 @@ class MainActivity : ComponentActivity() {
                 systemUiController.setNavigationBarColor(
                     color = MaterialTheme.colors.background
                 )
-                MainNavigation(context = this, SoundPlayer(application))
+                MainNavigation(context = application, SoundPlayer(application))
             }
         }
     }

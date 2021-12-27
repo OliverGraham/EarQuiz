@@ -4,8 +4,9 @@ import android.app.Application
 import androidx.compose.runtime.Immutable
 import android.media.AudioAttributes
 import android.media.SoundPool
+import kotlinx.coroutines.delay
 
-private const val MAX_STREAMS = 2
+private const val MAX_STREAMS = 3
 private const val START_PITCH = 40
 private const val END_PITCH = 65
 
@@ -23,24 +24,36 @@ class SoundPlayer(
         initializeSounds()
     }
 
-    private var note1 = 0
-    private var note2 = 0
-
-    fun setCurrentSequence(note1: Int, note2: Int) {
-        this.note1 = note1
-        this.note2 = note2
+    suspend fun play(quizIndex: Int, pitches: List<Int>) {
+        when (quizIndex) {
+            0 -> playMelodicInterval(pitch1 = pitches[0], pitch2 = pitches[1])
+            1 -> playHarmonicInterval(pitch1 = pitches[0], pitch2 = pitches[1])
+            2 -> playChord(pitchList = pitches)
+        }
     }
 
-    fun playNote1() {
-        playNote(note1)
+    private suspend fun playMelodicInterval(pitch1: Int, pitch2: Int) {
+        playNote(pitch1)
+        delay(timeMillis = 1200)
+        playNote(pitch2)
+        delay(timeMillis = 1500)
     }
-    fun playNote2() {
-        playNote(note2)
+
+    private suspend fun playHarmonicInterval(pitch1: Int, pitch2: Int) {
+        playNote(pitch1)
+        playNote(pitch2)
+        delay(timeMillis = 1500)
+    }
+
+    private suspend fun playChord(pitchList: List<Int>) {
+        pitchList.forEach { pitch ->
+            playNote(pitch = pitch)
+        }
+        delay(timeMillis = 1500)
     }
 
     private fun playNote(pitch: Int) {
-        soundPool.play(
-            soundPoolMap.getValue(key = pitch), 1f, 1f, 0, 0, 1f)
+        soundPool.play(soundPoolMap.getValue(key = pitch), 1f, 1f, 0, 0, 1f)
     }
 
     private fun buildSoundPool(maxStreams: Int = MAX_STREAMS) {
@@ -55,6 +68,7 @@ class SoundPlayer(
             .build()
     }
 
+    // load all sounds from .ogg files into SoundPool
     private fun initializeSounds() {
         for (i in START_PITCH..END_PITCH)
             soundPoolMap[i] = soundPool.load(application,

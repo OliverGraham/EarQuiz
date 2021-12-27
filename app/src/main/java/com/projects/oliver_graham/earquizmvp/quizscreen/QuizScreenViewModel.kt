@@ -3,7 +3,10 @@ package com.projects.oliver_graham.earquizmvp.quizscreen
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotMutableState
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.projects.oliver_graham.earquizmvp.R
@@ -11,11 +14,11 @@ import com.projects.oliver_graham.earquizmvp.data.FirebaseController
 import com.projects.oliver_graham.earquizmvp.data.Note
 import com.projects.oliver_graham.earquizmvp.data.QuestionsRepo
 import com.projects.oliver_graham.earquizmvp.data.QuizQuestion
-import com.projects.oliver_graham.earquizmvp.navigation.HOME_INDEX
-import com.projects.oliver_graham.earquizmvp.navigation.LEADERBOARD_INDEX
+import com.projects.oliver_graham.earquizmvp.data.quiz.Quiz
+import com.projects.oliver_graham.earquizmvp.navigation.HOME_NAV_INDEX
+import com.projects.oliver_graham.earquizmvp.navigation.LEADERBOARD_NAV_INDEX
 import com.projects.oliver_graham.earquizmvp.navigation.NavigationController
 import com.projects.oliver_graham.earquizmvp.sounds.SoundPlayer
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -23,15 +26,22 @@ class QuizScreenViewModel(
     private val navController: NavigationController,
     private val firebaseController: FirebaseController,
     private val isTakingQuiz: MutableState<Boolean>,
+    private val quizSelectedIndex: MutableState<Int>,
     private val navItemSelectedIndex: MutableState<Int>,
-    private val soundPlayer: SoundPlayer
+    private val soundPlayer: SoundPlayer,
+    private val quiz: Quiz.Companion
 ) : ViewModel() {
 
-    val quizName = "Intervals"          // get quiz name from nav?
-    val totalQuestions = 5              // could pass different amount later
+    val currentQuiz: MutableState<Quiz> = mutableStateOf(quiz.getQuizInProgress())
+
+    //val totalQuestions = 5              // could pass different amount later
     private val repo = QuestionsRepo
+
     private val intervalsByHalfStepMap = repo.getIntervalsByHalfStep()
     private val noteList = repo.getNotes()
+
+    private var pitch1 = -1
+    private var pitch2 = -1
 
     val questionNumber: MutableState<Int> = mutableStateOf(value = 1)
     val correctUserAnswers: MutableState<Int> = mutableStateOf(value = 0)
@@ -63,7 +73,7 @@ class QuizScreenViewModel(
         showAnswerDialog.value = false
         showFinishedDialog.value = false
 
-        currentCorrectAnswer.value = QuizQuestion(id = 0, text = "", firstNote = 0, secondNote = 0)
+        currentCorrectAnswer.value = QuizQuestion()
         isTakingQuiz.value = false
         resetQuizPage()
     }
@@ -84,7 +94,8 @@ class QuizScreenViewModel(
         val keyInterval: Int = kotlin.math.abs(n = noteOne.pitch - noteTwo.pitch)
         val randomIntervals: List<Int> = getRandomIntervals(keyInterval)
 
-        soundPlayer.setCurrentSequence(note1 = noteOne.pitch, note2 = noteTwo.pitch)
+        pitch1 = noteOne.pitch
+        pitch2 = noteTwo.pitch
 
         currentCorrectAnswer.value = QuizQuestion(
             id = keyInterval,
@@ -106,6 +117,8 @@ class QuizScreenViewModel(
     }
 
 
+    fun getQuizName() = quiz.getQuizInProgress().title
+
     fun determineOutcome() = currentCorrectAnswer.value.id == currentUserChoice.value
 
     fun convertUserChoiceToText() = intervalsByHalfStepMap.getValue(currentUserChoice.value)
@@ -117,10 +130,8 @@ class QuizScreenViewModel(
         if (countTowardScore)
             numberOfIntervalTaps.value++
 
-        soundPlayer.playNote1()
-        delay(timeMillis = 1000)
-        soundPlayer.playNote2()
-        delay(timeMillis = 1000)
+        //soundPlayer.play(quizIndex = quizSelectedIndex.value, pitches = listOf(pitch1, pitch2))
+         soundPlayer.play(quizIndex = currentQuiz.value.quizIndex, pitches = listOf(pitch1, pitch2))
 
         playButtonEnabled.value = true
     }
@@ -131,10 +142,10 @@ class QuizScreenViewModel(
         if (outcome)
             correctUserAnswers.value++
         else
-           incorrectUserAnswers.value++
+            incorrectUserAnswers.value++
 
         // if end of quiz, open next dialog
-        if (questionNumber.value == totalQuestions) {
+        if (questionNumber.value == currentQuiz.value.totalQuestions) {
             saveResultsToFirestore()
             showFinishedDialog.value = !showFinishedDialog.value
         } else {
@@ -144,12 +155,12 @@ class QuizScreenViewModel(
     }
 
     fun navToHomeScreen() {
-        navItemSelectedIndex.value = HOME_INDEX
+        navItemSelectedIndex.value = HOME_NAV_INDEX
         navController.navHomeScreenPopAndTop()
     }
 
     fun navToLeaderboardScreen() {
-        navItemSelectedIndex.value = LEADERBOARD_INDEX
+        navItemSelectedIndex.value = LEADERBOARD_NAV_INDEX
         navController.navLeaderboardScreenPopAndTop()
     }
 

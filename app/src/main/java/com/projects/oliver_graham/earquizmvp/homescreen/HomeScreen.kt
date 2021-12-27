@@ -46,7 +46,7 @@ fun HomeScreen(
 
     ){ ->
         // make an expandable quiz description, with button, for every description in the repo
-        itemsIndexed(viewModel.quizDescriptions) { index, quizDescription ->
+        itemsIndexed(viewModel.quizzes) { index, quiz ->
             Spacer(
                 modifier = Modifier.padding(vertical = 8.dp)
             )
@@ -56,15 +56,19 @@ fun HomeScreen(
             ) { ->
 
                 ExpandableRow(                   // change name to ExpandableWideCard?
-                    title = quizDescription.title,
-                    quizDescriptions = quizDescription.descriptions
+                    title = quiz.title,
+                    quizDescriptions = quiz.descriptions
                 )
 
-                // only intervals quiz (index 0) is available, so disable other buttons
-                val isIconButtonEnabled = remember { mutableStateOf(value = index == 0) }
+                // only intervals quiz (indices 0 and 1) is available, so disable other buttons
+                //val isIconButtonEnabled = remember { mutableStateOf(value = index == 0 || index == 1) }
+                val isIconButtonEnabled = remember { mutableStateOf(value = quiz.isEnabled) }
+
+                // if none in progress, enable all buttons
+                // if one in progress, enable only that button
 
                 CircularIconButton(
-                    onClick = { viewModel.onQuizButtonClick() },
+                    onClick = { viewModel.onQuizButtonClick(quiz = quiz) },
                     icon = Icons.Default.ArrowForward,
                     mutableEnabled = isIconButtonEnabled,
                     buttonBackgroundColor =     // gray background if button is disabled

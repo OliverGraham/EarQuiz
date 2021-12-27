@@ -6,6 +6,9 @@ object QuestionsRepo {
     fun getIntervalsByHalfStep(): Map<Int, String> = intervalsByHalfStep
     fun getNotes(): List<Note> = notes
     fun getAllQuizDescriptions(): List<QuizDescription> = allDescriptions
+    // TODO get individual quiz descriptions
+    fun getMelodicQuizDescriptions(): List<String> = melodicIntervalQuizDescription
+    fun getHarmonicQuizDescriptions(): List<String> = harmonicIntervalQuizDescription
 }
 
 private val intervalsByHalfStep: Map<Int, String> = mapOf(
@@ -80,12 +83,18 @@ private val notes: List<Note> = listOf(
 )
 
 // HomeScreen Data
-private val intervalQuizDescription: List<String> = listOf(
+private val melodicIntervalQuizDescription: List<String> = listOf(
     "Try to guess the interval",
     "Intervals will be ascending or descending, within an octave",
     "There will be four possible choices; one correct",
     "Try to guess in as few listens as possible",
     "If you get stumped hints may appear"
+)
+
+private val harmonicIntervalQuizDescription: List<String> = listOf(
+    "Two notes will be played at the same time",
+    "There will be four possible choices; one correct",
+    "Try to guess in as few listens as possible"
 )
 
 private val easyChordQuizDescription: List<String> = listOf(
@@ -108,8 +117,12 @@ private val randomQuizDescription: List<String> = listOf(
 
 private val allDescriptions: List<QuizDescription> = listOf(
     QuizDescription(
-        title = "Intervals",
-        descriptions = intervalQuizDescription
+        title = "Melodic Intervals",
+        descriptions = melodicIntervalQuizDescription
+    ),
+    QuizDescription(
+        title = "Harmonic Intervals",
+        descriptions = harmonicIntervalQuizDescription
     ),
     QuizDescription(
         title = "Easy Chords",

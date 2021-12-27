@@ -23,11 +23,11 @@ fun NavGraphBuilder.homeNavGraph(
     quizScreenViewModel: QuizScreenViewModel,
     leaderboardScreenViewModel: LeaderboardScreenViewModel
 ) {
-
     navigation(
         startDestination = Screen.HomeScreen.route,
         route = HOME_GRAPH_ROUTE
     ) { ->
+
         composable(
             route = Screen.HomeScreen.route,
             enterTransition = enterTransition(),

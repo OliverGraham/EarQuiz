@@ -23,7 +23,7 @@ class LeaderboardScreenViewModel(
 ) : ViewModel() {
 
     // get flow of Users from firestore - emits changes that will cause UI to update
-    val users: StateFlow<List<User>>
+    private val users: StateFlow<List<User>>
         get() = firebaseController.getUsers()
 
     val sortedUsers: MutableState<List<User>> = mutableStateOf(mutableListOf())

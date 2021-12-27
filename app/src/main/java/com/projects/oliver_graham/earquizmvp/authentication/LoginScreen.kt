@@ -36,6 +36,7 @@ fun LoginScreen(viewModel: LoginScreenViewModel) {
         ActivityResultContracts.StartActivityForResult()) { activityResult ->
         viewModel.completeGoogleSignIn(activityResult.data)
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()

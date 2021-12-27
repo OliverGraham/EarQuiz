@@ -40,9 +40,9 @@ fun QuizScreen(viewModel: QuizScreenViewModel) {
             .fillMaxSize()
     ) { ->
         TopRow(
-            quizName = viewModel.quizName,
+            quizName = viewModel.getQuizName(),
             questionNumber = viewModel.questionNumber.value,
-            totalQuestions = viewModel.totalQuestions,
+            totalQuestions = viewModel.currentQuiz.value.totalQuestions,
             correctUserAnswers = viewModel.correctUserAnswers.value,
             incorrectUserAnswers = viewModel.incorrectUserAnswers.value
         )
@@ -95,7 +95,7 @@ fun QuizScreen(viewModel: QuizScreenViewModel) {
                     viewModel.resetQuizScreen()
                     viewModel.navToHomeScreen()
                 },
-                title = "Finished! ${viewModel.questionNumber.value}/${viewModel.totalQuestions}",
+                title = "Finished! ${viewModel.questionNumber.value}/${viewModel.currentQuiz.value.totalQuestions}",
                 correctText = "You got ${viewModel.correctUserAnswers.value} correct",
                 incorrectText = "You got ${viewModel.incorrectUserAnswers.value} incorrect",
                 numberOfSoundsPlayedText =

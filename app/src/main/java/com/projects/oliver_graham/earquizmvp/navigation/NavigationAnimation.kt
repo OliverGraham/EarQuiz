@@ -68,8 +68,6 @@ fun popExitTransition(
         ) + fadeOut(animationSpec = tween(TRANSITION_DURATION))
     }
 
-// TODO: LB to Quiz needs to go left, not right
-
 @ExperimentalAnimationApi
 fun exitTransition(
     offset: Int = TRANSITION_OFFSET
