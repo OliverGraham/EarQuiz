@@ -1,12 +1,19 @@
 package com.projects.oliver_graham.earquizmvp.navigation
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.navigation.NavController
 
 class NavigationController(
     private val navController: NavController
 ) {
 
+    // TODO Add selectedItemIndex here to help with bottom nav bar. Could it also help with back button?
+    val showBottomNavBar: MutableState<Boolean> = mutableStateOf(value = false)
+    val selectedItemIndex: MutableState<Int> = mutableStateOf(value = 0)
+
     fun navLoginScreen() {
+        selectedItemIndex.value = Screen.HomeScreen.screenIndex
         navController.popBackStack()
         navController.navigate(Screen.LoginScreen.route)
     }
@@ -24,6 +31,7 @@ class NavigationController(
     }
 
     fun navHomeScreenPopAndTop() {
+        selectedItemIndex.value = Screen.HomeScreen.screenIndex
         navController.popBackStack()
         navController.navigate(Screen.HomeScreen.route) { ->
             launchSingleTop = true
@@ -31,6 +39,7 @@ class NavigationController(
     }
 
     fun navLeaderboardScreenPopAndTop() {
+        selectedItemIndex.value = Screen.LeaderboardScreen.screenIndex
         navController.popBackStack()
         navController.navigate(Screen.LeaderboardScreen.route) { ->
             launchSingleTop = true
@@ -40,6 +49,7 @@ class NavigationController(
     fun navCreateAccountScreen() = navController.navigate(Screen.CreateAccountScreen.route)
 
     fun navQuizScreenSingleTop() {
+        selectedItemIndex.value = Screen.QuizScreen.screenIndex
         navController.navigate(Screen.QuizScreen.route) { ->
             launchSingleTop = true  // one copy of quiz on backstack
         }

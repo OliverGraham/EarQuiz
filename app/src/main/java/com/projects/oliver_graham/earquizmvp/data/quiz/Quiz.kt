@@ -58,15 +58,21 @@ sealed class Quiz private constructor(
         private val quizInProgress: MutableState<Quiz> = mutableStateOf(FakeQuiz)
 
         fun setQuizInProgress(quiz: Quiz) {
-            quizInProgress.value.isInProgress = false   // set false regardless?
+            stopCurrentQuiz()   // set false regardless?
             quizInProgress.value = quiz
-            quizInProgress.value.isInProgress = true
+            startCurrentQuiz()
         }
 
-        /*private fun startQuiz() {}
-        fun endQuiz() {
-            quizInProgress.value.isInProgress = false
-        }*/
+        fun startCurrentQuiz() {quizInProgress.value.isInProgress = true }
+        fun stopCurrentQuiz() { quizInProgress.value.isInProgress = false }
+
+        fun isThereAQuizInProgress(): Boolean {
+            getAllQuizzes().forEach { quiz ->
+                if (quiz.isInProgress)
+                    return true
+            }
+            return false
+        }
 
         fun getQuizInProgress(): Quiz = quizInProgress.value
 

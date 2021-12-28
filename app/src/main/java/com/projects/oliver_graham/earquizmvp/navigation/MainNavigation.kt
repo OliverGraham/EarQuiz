@@ -1,7 +1,6 @@
 package com.projects.oliver_graham.earquizmvp.navigation
 
 import android.content.Context
-import android.media.SoundPool
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -10,7 +9,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
@@ -21,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -29,7 +26,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -57,40 +53,30 @@ fun MainNavigation(
     val navController = rememberAnimatedNavController()
     val navWrapper = remember { NavigationController(navController) }
     val firebaseController = remember { FirebaseController(navWrapper, context) }
-
-    // state that needs to be shared across app
-    val isTakingQuiz: MutableState<Boolean> = remember { mutableStateOf(value = false) }
-    val showBottomNavBar: MutableState<Boolean> = remember { mutableStateOf(value = false) }    // TODO Add this state to navWrapper
-    val quizSelectedIndex: MutableState<Int> = remember { mutableStateOf(value = 0) }
     val quizController = remember { Quiz }
-    val isQuizInProgress: MutableState<Boolean> = remember { mutableStateOf(value = false) }
-   // val quizController: MutableState<Quiz.Companion> = remember { mutableStateOf(Quiz) }
-
-    // tracks nav bar button presses, to keep animation in-sync
-    val navItemSelectedIndex: MutableState<Int> = remember { mutableStateOf(value = 0) }
 
     BackGroundImage {
         Scaffold(
             topBar = {
-                     TopBar(
-                         navigationController = navWrapper,
-                         firebaseController = firebaseController,
-                         atLoginScreen = showBottomNavBar.value
-                     )
+                 TopBar(
+                     navigationController = navWrapper,
+                     firebaseController = firebaseController,
+                     atLoginScreen = navWrapper.showBottomNavBar.value,
+                     endQuiz =  { quizController.stopCurrentQuiz() }
+                 )
             },
             bottomBar = {
-                    BottomBar(
-                        navController = navController,
-                        screenList = listOf(
-                            Screen.HomeScreen,
-                            Screen.QuizScreen,
-                            Screen.LeaderboardScreen
-                        ),
-                        showBottomNavBar = showBottomNavBar.value,
-                        //isTakingQuiz = isTakingQuiz.value,
-                        isTakingQuiz = quizController.getQuizInProgress().isInProgress,
-                        navItemSelectedIndex = navItemSelectedIndex
-                    )
+                BottomBar(
+                    navController = navController,
+                    screenList = listOf(
+                        Screen.HomeScreen,
+                        Screen.QuizScreen,
+                        Screen.LeaderboardScreen
+                    ),
+                    showBottomNavBar = navWrapper.showBottomNavBar.value,
+                    isTakingQuiz = quizController.getQuizInProgress().isInProgress,
+                    navItemSelectedIndex = navWrapper.selectedItemIndex
+                )
             },
             backgroundColor = MaterialTheme.colors.background.copy(alpha = 0.925f),
 
@@ -104,17 +90,13 @@ fun MainNavigation(
                 CreateAccountScreenViewModel(navWrapper, firebaseController)
             }
             val homeScreenViewModel = remember {
-                HomeScreenViewModel(
-                    navWrapper, isTakingQuiz, quizSelectedIndex, navItemSelectedIndex, quizController)
+                HomeScreenViewModel(navWrapper, quizController)
             }
             val quizScreenViewModel = remember {
-                QuizScreenViewModel(
-                    navWrapper, firebaseController, isTakingQuiz,
-                    quizSelectedIndex, navItemSelectedIndex, soundPlayer, quizController
-                )
+                QuizScreenViewModel(navWrapper, firebaseController, quizController, soundPlayer)
             }
             val leaderboardScreenViewModel = remember {
-                LeaderboardScreenViewModel(navWrapper, firebaseController, navItemSelectedIndex)
+                LeaderboardScreenViewModel(navWrapper, firebaseController)
             }
 
             AnimatedNavHost(
@@ -124,12 +106,12 @@ fun MainNavigation(
                 modifier = Modifier.padding(innerPadding)
             ) { ->
                 authNavGraph(
-                    showBottomNavBar = showBottomNavBar,
+                    showBottomNavBar = navWrapper.showBottomNavBar,
                     loginScreenViewModel = loginScreenViewModel,
                     createAccountScreenViewModel = createAccountScreenViewModel
                 )
                 homeNavGraph(
-                    showBottomNavBar = showBottomNavBar,
+                    showBottomNavBar = navWrapper.showBottomNavBar,
                     homeScreenViewModel = homeScreenViewModel,
                     quizScreenViewModel = quizScreenViewModel,
                     leaderboardScreenViewModel = leaderboardScreenViewModel
@@ -144,7 +126,8 @@ fun MainNavigation(
 fun TopBar(
     navigationController: NavigationController,
     firebaseController: FirebaseController,
-    atLoginScreen: Boolean
+    atLoginScreen: Boolean,
+    endQuiz: () -> Unit
 ) {
     val expanded = remember { mutableStateOf(value = false) }
     Row(
@@ -187,6 +170,7 @@ fun TopBar(
                                 expanded.value = false
                                 firebaseController.logOutUserFromFirebase()
                                 firebaseController.logOutUserFromGoogle()
+                                endQuiz()
                             }
                         )
                         Divider(modifier = Modifier.padding(1.dp))
@@ -199,6 +183,7 @@ fun TopBar(
                             firebaseController.logOutUserFromFirebase()
                             firebaseController.logOutUserFromGoogle()
                             navigationController.navLoginScreen()
+                            endQuiz()
                         }
                     )
 

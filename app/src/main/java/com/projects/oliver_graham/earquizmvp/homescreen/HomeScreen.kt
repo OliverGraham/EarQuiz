@@ -40,45 +40,38 @@ fun HomeScreen(
     viewModel: HomeScreenViewModel
 ) {
     val listState = rememberLazyListState()
+    val takingQuiz = remember { mutableStateOf(value = viewModel.isQuizInProgress()) }
+
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxHeight()
-
     ){ ->
         // make an expandable quiz description, with button, for every description in the repo
         itemsIndexed(viewModel.quizzes) { index, quiz ->
-            Spacer(
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
+            Spacer(modifier = Modifier.padding(vertical = 8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) { ->
-
                 ExpandableRow(                   // change name to ExpandableWideCard?
                     title = quiz.title,
                     quizDescriptions = quiz.descriptions
                 )
 
-                // only intervals quiz (indices 0 and 1) is available, so disable other buttons
-                //val isIconButtonEnabled = remember { mutableStateOf(value = index == 0 || index == 1) }
-                val isIconButtonEnabled = remember { mutableStateOf(value = quiz.isEnabled) }
-
-                // if none in progress, enable all buttons
-                // if one in progress, enable only that button
+                val isIconButtonEnabled = remember {
+                    mutableStateOf(value = (quiz.isEnabled && !takingQuiz.value) || quiz.isInProgress)
+                }
 
                 CircularIconButton(
                     onClick = { viewModel.onQuizButtonClick(quiz = quiz) },
                     icon = Icons.Default.ArrowForward,
                     mutableEnabled = isIconButtonEnabled,
-                    buttonBackgroundColor =     // gray background if button is disabled
+                    buttonBackgroundColor =
                         if (isIconButtonEnabled.value) Color.Unspecified
                         else Color(color = 0xFFB0BEC5)      // BlueGray200
                 )
             }
-            Spacer(
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
+            Spacer(modifier = Modifier.padding(vertical = 8.dp))
         }
 
     }

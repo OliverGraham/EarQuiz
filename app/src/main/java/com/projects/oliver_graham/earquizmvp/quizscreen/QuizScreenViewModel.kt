@@ -25,17 +25,13 @@ import kotlin.random.Random
 class QuizScreenViewModel(
     private val navController: NavigationController,
     private val firebaseController: FirebaseController,
-    private val isTakingQuiz: MutableState<Boolean>,
-    private val quizSelectedIndex: MutableState<Int>,
-    private val navItemSelectedIndex: MutableState<Int>,
-    private val soundPlayer: SoundPlayer,
-    private val quiz: Quiz.Companion
+    private val quizController: Quiz.Companion,
+    private val soundPlayer: SoundPlayer
 ) : ViewModel() {
 
-    val currentQuiz: MutableState<Quiz> = mutableStateOf(quiz.getQuizInProgress())
+    val currentQuiz: MutableState<Quiz> = mutableStateOf(quizController.getQuizInProgress())
 
-    //val totalQuestions = 5              // could pass different amount later
-    private val repo = QuestionsRepo
+    private val repo = QuestionsRepo    // TODO: Get this outta here
 
     private val intervalsByHalfStepMap = repo.getIntervalsByHalfStep()
     private val noteList = repo.getNotes()
@@ -43,17 +39,17 @@ class QuizScreenViewModel(
     private var pitch1 = -1
     private var pitch2 = -1
 
-    val questionNumber: MutableState<Int> = mutableStateOf(value = 1)
-    val correctUserAnswers: MutableState<Int> = mutableStateOf(value = 0)
-    val incorrectUserAnswers: MutableState<Int> = mutableStateOf(value = 0)
-    val numberOfIntervalTaps: MutableState<Int> = mutableStateOf(value = 0)
-    val currentUserChoice: MutableState<Int> = mutableStateOf(value = 0)
+    val questionNumber:         MutableState<Int> = mutableStateOf(value = 1)
+    val correctUserAnswers:     MutableState<Int> = mutableStateOf(value = 0)
+    val incorrectUserAnswers:   MutableState<Int> = mutableStateOf(value = 0)
+    val numberOfIntervalTaps:   MutableState<Int> = mutableStateOf(value = 0)
+    val currentUserChoice:      MutableState<Int> = mutableStateOf(value = 0)
 
-    val submitButtonEnabled: MutableState<Boolean> = mutableStateOf(value = false)
-    val playButtonEnabled: MutableState<Boolean> = mutableStateOf(value = true)
-    val nextButtonEnabled: MutableState<Boolean> = mutableStateOf(value = true)
-    val showAnswerDialog: MutableState<Boolean> = mutableStateOf(value = false)
-    val showFinishedDialog: MutableState<Boolean> = mutableStateOf(value = false)
+    val submitButtonEnabled:    MutableState<Boolean> = mutableStateOf(value = false)
+    val playButtonEnabled:      MutableState<Boolean> = mutableStateOf(value = true)
+    val nextButtonEnabled:      MutableState<Boolean> = mutableStateOf(value = true)
+    val showAnswerDialog:       MutableState<Boolean> = mutableStateOf(value = false)
+    val showFinishedDialog:     MutableState<Boolean> = mutableStateOf(value = false)
 
     val currentCorrectAnswer: MutableState<QuizQuestion> = mutableStateOf(value = QuizQuestion())
     val radioGroup: SnapshotStateList<QuizQuestion> = mutableStateListOf()
@@ -74,7 +70,7 @@ class QuizScreenViewModel(
         showFinishedDialog.value = false
 
         currentCorrectAnswer.value = QuizQuestion()
-        isTakingQuiz.value = false
+        quizController.stopCurrentQuiz()
         resetQuizPage()
     }
 
@@ -117,7 +113,7 @@ class QuizScreenViewModel(
     }
 
 
-    fun getQuizName() = quiz.getQuizInProgress().title
+    fun getQuizName() = quizController.getQuizInProgress().title
 
     fun determineOutcome() = currentCorrectAnswer.value.id == currentUserChoice.value
 
@@ -155,12 +151,10 @@ class QuizScreenViewModel(
     }
 
     fun navToHomeScreen() {
-        navItemSelectedIndex.value = HOME_NAV_INDEX
         navController.navHomeScreenPopAndTop()
     }
 
     fun navToLeaderboardScreen() {
-        navItemSelectedIndex.value = LEADERBOARD_NAV_INDEX
         navController.navLeaderboardScreenPopAndTop()
     }
 

@@ -18,8 +18,7 @@ import java.util.Objects.compare
 
 class LeaderboardScreenViewModel(
     private val navController: NavigationController,
-    private val firebaseController: FirebaseController,
-    private val navItemSelectedIndex: MutableState<Int>
+    private val firebaseController: FirebaseController
 ) : ViewModel() {
 
     // get flow of Users from firestore - emits changes that will cause UI to update

@@ -16,9 +16,14 @@ sealed class Screen(
     val icon: ImageVector = Icons.Rounded.Home,
     val screenIndex: Int = -1   // maybe needed when handling back button pressed, for later
     ) {
-    object HomeScreen : Screen(route = "home_screen", icon = Icons.Rounded.Home, screenIndex = HOME_NAV_INDEX)
-    object QuizScreen : Screen(route = "quiz_screen", icon = Icons.Rounded.Quiz, screenIndex = QUIZ_NAV_INDEX)
-    object LoginScreen : Screen(route = "login_screen", icon = Icons.Rounded.Login)
-    object CreateAccountScreen : Screen(route ="create_account_screen", icon = Icons.Rounded.Calculate)
-    object LeaderboardScreen : Screen(route ="leaderboard_screen", icon = Icons.Rounded.Score, screenIndex = LEADERBOARD_NAV_INDEX)
+    object HomeScreen :
+        Screen(route = "home_screen", icon = Icons.Rounded.Home, screenIndex = HOME_NAV_INDEX)
+    object QuizScreen :
+        Screen(route = "quiz_screen", icon = Icons.Rounded.Quiz, screenIndex = QUIZ_NAV_INDEX)
+    object LoginScreen :
+        Screen(route = "login_screen", icon = Icons.Rounded.Login)
+    object CreateAccountScreen :
+        Screen(route = "create_account_screen", icon = Icons.Rounded.Calculate)
+    object LeaderboardScreen :
+        Screen(route = "leaderboard_screen", icon = Icons.Rounded.Score, screenIndex = LEADERBOARD_NAV_INDEX)
 }
