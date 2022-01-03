@@ -27,24 +27,24 @@ class QuizScreenViewModel(
     private val firebaseController: FirebaseController,
     private val quizController: Quiz.Companion,
     private val soundPlayer: SoundPlayer
-) : ViewModel() {
+    ) : ViewModel() {
 
-    val currentQuiz: MutableState<Quiz> = mutableStateOf(quizController.getQuizInProgress())
+    val currentQuiz: Quiz
+        get() = quizController.getQuizInProgress()
 
     private val repo = QuestionsRepo    // TODO: Get this outta here
 
     private val intervalsByHalfStepMap = repo.getIntervalsByHalfStep()
     private val noteList = repo.getNotes()
 
-    private var pitch1 = -1
-    private var pitch2 = -1
-
+    // TODO: can all these be part of quizController? It is Quiz logic
     val questionNumber:         MutableState<Int> = mutableStateOf(value = 1)
     val correctUserAnswers:     MutableState<Int> = mutableStateOf(value = 0)
     val incorrectUserAnswers:   MutableState<Int> = mutableStateOf(value = 0)
     val numberOfIntervalTaps:   MutableState<Int> = mutableStateOf(value = 0)
     val currentUserChoice:      MutableState<Int> = mutableStateOf(value = 0)
 
+    // and this is UI logic...
     val submitButtonEnabled:    MutableState<Boolean> = mutableStateOf(value = false)
     val playButtonEnabled:      MutableState<Boolean> = mutableStateOf(value = true)
     val nextButtonEnabled:      MutableState<Boolean> = mutableStateOf(value = true)
@@ -82,6 +82,7 @@ class QuizScreenViewModel(
         currentUserChoice.value = 0
         submitButtonEnabled.value = false
         emptyRadioGroup()
+        soundPlayer.emptyPitchList()
 
         // three random intervals and one correct
         val twoCurrentNotes: List<Note> = createTwoRandomNotes()
@@ -90,8 +91,8 @@ class QuizScreenViewModel(
         val keyInterval: Int = kotlin.math.abs(n = noteOne.pitch - noteTwo.pitch)
         val randomIntervals: List<Int> = getRandomIntervals(keyInterval)
 
-        pitch1 = noteOne.pitch
-        pitch2 = noteTwo.pitch
+        soundPlayer.addPitch(noteOne.pitch)
+        soundPlayer.addPitch(noteTwo.pitch)
 
         currentCorrectAnswer.value = QuizQuestion(
             id = keyInterval,
@@ -126,8 +127,7 @@ class QuizScreenViewModel(
         if (countTowardScore)
             numberOfIntervalTaps.value++
 
-        //soundPlayer.play(quizIndex = quizSelectedIndex.value, pitches = listOf(pitch1, pitch2))
-         soundPlayer.play(quizIndex = currentQuiz.value.quizIndex, pitches = listOf(pitch1, pitch2))
+        soundPlayer.play(quizIndex = currentQuiz.quizIndex)
 
         playButtonEnabled.value = true
     }
@@ -141,7 +141,7 @@ class QuizScreenViewModel(
             incorrectUserAnswers.value++
 
         // if end of quiz, open next dialog
-        if (questionNumber.value == currentQuiz.value.totalQuestions) {
+        if (questionNumber.value == currentQuiz.totalQuestions) {
             saveResultsToFirestore()
             showFinishedDialog.value = !showFinishedDialog.value
         } else {
@@ -150,13 +150,8 @@ class QuizScreenViewModel(
         }
     }
 
-    fun navToHomeScreen() {
-        navController.navHomeScreenPopAndTop()
-    }
-
-    fun navToLeaderboardScreen() {
-        navController.navLeaderboardScreenPopAndTop()
-    }
+    fun navToHomeScreen() { navController.navHomeScreenPopAndTop() }
+    fun navToLeaderboardScreen() { navController.navLeaderboardScreenPopAndTop() }
 
     // later, could save results of individual quizzes. For now, just save right and wrong answers
     private fun saveResultsToFirestore() {

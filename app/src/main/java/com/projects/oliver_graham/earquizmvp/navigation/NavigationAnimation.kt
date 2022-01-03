@@ -23,28 +23,45 @@ private const val TRANSITION_OFFSET = 500
 private const val NAV_BAR_DURATION = 1000
 private const val NAV_ITEM_DURATION = 500
 
+private const val TO_RIGHT = 500
+private const val TO_LEFT = -500
+
+private fun getOffsetForEnterTransition(startRoute: String?, endRoute: String?): Int {
+
+    when (startRoute) {
+        Screen.LoginScreen.route -> when (endRoute) {
+            Screen.CreateAccountScreen.route -> return TO_RIGHT
+            Screen.HomeScreen.route -> return TO_RIGHT
+        }
+        Screen.CreateAccountScreen.route -> when (endRoute) {
+            Screen.LoginScreen.route -> return TO_LEFT
+            Screen.HomeScreen.route -> return TO_RIGHT
+        }
+        Screen.HomeScreen.route -> when (endRoute) {
+            Screen.QuizScreen.route -> return TO_RIGHT
+            Screen.LeaderboardScreen.route -> return TO_RIGHT
+        }
+        Screen.QuizScreen.route -> when (endRoute) {
+            Screen.LeaderboardScreen.route -> return TO_RIGHT
+            // quiz to home is handled somewhere else
+        }
+        Screen.LeaderboardScreen.route -> when (endRoute) {
+            Screen.QuizScreen.route -> return TO_LEFT
+            // LB to home is handled somewhere else
+        }
+    }
+
+    return TO_LEFT
+}
+
 @ExperimentalAnimationApi
 fun enterTransition(
     offset: Int = TRANSITION_OFFSET
-):
-        (AnimatedContentScope<String>.(NavBackStackEntry, NavBackStackEntry) -> EnterTransition?) =
+): (AnimatedContentScope<String>.(NavBackStackEntry, NavBackStackEntry) -> EnterTransition?) =
     { start, end ->
-
-        // TODO: so the logic is... positive == going right, and negative == going left?
-        val newOffset = if (end.destination.route == "leaderboard_screen") {
-            500
-        } else if (end.destination.route == "quiz_screen") {
-            if (start.destination.route == "leaderboard_screen") {
-                -500
-            } else {
-                500
-            }
-        } else {
-            -500        // homescreen from loginscreen looks weird
-        }
-
         slideInHorizontally(
-            initialOffsetX = { newOffset },
+            initialOffsetX =
+                { getOffsetForEnterTransition(start.destination.route, end.destination.route) },
             animationSpec = tween(
                 durationMillis = TRANSITION_DURATION,
                 easing = FastOutSlowInEasing
@@ -56,8 +73,7 @@ fun enterTransition(
 @ExperimentalAnimationApi
 fun popExitTransition(
     offset: Int = TRANSITION_OFFSET
-):
-        (AnimatedContentScope<String>.(NavBackStackEntry, NavBackStackEntry) -> ExitTransition) =
+): (AnimatedContentScope<String>.(NavBackStackEntry, NavBackStackEntry) -> ExitTransition) =
     { _, _ ->
         slideOutHorizontally(
             targetOffsetX = { offset },
@@ -71,41 +87,31 @@ fun popExitTransition(
 @ExperimentalAnimationApi
 fun exitTransition(
     offset: Int = TRANSITION_OFFSET
-):
-        (AnimatedContentScope<String>.(NavBackStackEntry, NavBackStackEntry) -> ExitTransition) =
+): (AnimatedContentScope<String>.(NavBackStackEntry, NavBackStackEntry) -> ExitTransition) =
     { _, _ ->
         slideOutHorizontally(
             targetOffsetX = { -offset },
-            animationSpec = tween(
-                durationMillis = TRANSITION_DURATION,
-                easing = FastOutSlowInEasing
-            )
+            animationSpec = tween(durationMillis = TRANSITION_DURATION, easing = FastOutSlowInEasing)
         ) + fadeOut(animationSpec = tween(TRANSITION_DURATION))
     }
 
 @ExperimentalAnimationApi
 fun popEnterTransition(
     offset: Int = TRANSITION_OFFSET
-):
-        (AnimatedContentScope<String>.(NavBackStackEntry, NavBackStackEntry) -> EnterTransition?) =
+): (AnimatedContentScope<String>.(NavBackStackEntry, NavBackStackEntry) -> EnterTransition?) =
     { _, _ ->
         slideInHorizontally(
             initialOffsetX = { -offset },
-            animationSpec = tween(
-                durationMillis = TRANSITION_DURATION,
-                easing = FastOutSlowInEasing
-            )
+            animationSpec = tween(durationMillis = TRANSITION_DURATION, easing = FastOutSlowInEasing)
         ) + fadeIn(animationSpec = tween(TRANSITION_DURATION))
     }
 
 
 @ExperimentalAnimationApi
-fun slideInVertically(): EnterTransition =
-    slideInVertically(
+fun slideInVertically(): EnterTransition = slideInVertically(
         initialOffsetY = { it },
-        animationSpec = tween(durationMillis = NAV_BAR_DURATION, delayMillis = NAV_BAR_DURATION))
-
-
+        animationSpec = tween(durationMillis = NAV_BAR_DURATION, delayMillis = NAV_BAR_DURATION)
+)
 
 @Composable
 fun AnimatableIcon(
@@ -118,17 +124,11 @@ fun AnimatableIcon(
     // Animation parameters
     val animatedScale: Float by animateFloatAsState(
         targetValue = scale,
-        animationSpec = TweenSpec(
-            durationMillis = NAV_ITEM_DURATION,
-            easing = FastOutSlowInEasing
-        )
+        animationSpec = TweenSpec(durationMillis = NAV_ITEM_DURATION, easing = FastOutSlowInEasing)
     )
     val animatedColor by animateColorAsState(
         targetValue = color,
-        animationSpec = TweenSpec(
-            durationMillis = NAV_ITEM_DURATION,
-            easing = FastOutSlowInEasing
-        )
+        animationSpec = TweenSpec(durationMillis = NAV_ITEM_DURATION, easing = FastOutSlowInEasing)
     )
     Icon(
         imageVector = imageVector,

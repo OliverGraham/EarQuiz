@@ -53,7 +53,7 @@ fun NavGraphBuilder.homeNavGraph(
         composable(
             route = Screen.LeaderboardScreen.route,
             enterTransition = enterTransition(),
-            exitTransition = exitTransition(offset = -500),      // sigh, to make positive?
+            exitTransition = exitTransition(offset = -500),      //
             popEnterTransition = popEnterTransition(),
             popExitTransition = popExitTransition()
         ) { _ ->

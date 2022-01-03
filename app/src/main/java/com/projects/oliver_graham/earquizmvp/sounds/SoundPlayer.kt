@@ -16,37 +16,40 @@ class SoundPlayer(
 ) {
 
     private lateinit var soundPool: SoundPool
-    private var soundPoolMap: MutableMap<Int, Int>
+    private val soundPoolMap: MutableMap<Int, Int> = mutableMapOf()
+    private val pitches: MutableList<Int> = mutableListOf()
 
     init {
         buildSoundPool()
-        soundPoolMap = mutableMapOf()
         initializeSounds()
     }
 
-    suspend fun play(quizIndex: Int, pitches: List<Int>) {
+    fun addPitch(pitch: Int) { pitches.add(pitch) }
+    fun emptyPitchList() { pitches.clear() }
+
+    suspend fun play(quizIndex: Int) {
         when (quizIndex) {
-            0 -> playMelodicInterval(pitch1 = pitches[0], pitch2 = pitches[1])
-            1 -> playHarmonicInterval(pitch1 = pitches[0], pitch2 = pitches[1])
-            2 -> playChord(pitchList = pitches)
+            0 -> playMelodicInterval()
+            1 -> playHarmonicInterval()
+            2 -> playChord()
         }
     }
 
-    private suspend fun playMelodicInterval(pitch1: Int, pitch2: Int) {
-        playNote(pitch1)
+    private suspend fun playMelodicInterval() {
+        playNote(pitches[0])
         delay(timeMillis = 1200)
-        playNote(pitch2)
+        playNote(pitches[1])
         delay(timeMillis = 1500)
     }
 
-    private suspend fun playHarmonicInterval(pitch1: Int, pitch2: Int) {
-        playNote(pitch1)
-        playNote(pitch2)
+    private suspend fun playHarmonicInterval() {
+        playNote(pitches[0])
+        playNote(pitches[1])
         delay(timeMillis = 1500)
     }
 
-    private suspend fun playChord(pitchList: List<Int>) {
-        pitchList.forEach { pitch ->
+    private suspend fun playChord() {
+        pitches.forEach { pitch ->
             playNote(pitch = pitch)
         }
         delay(timeMillis = 1500)
