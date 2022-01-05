@@ -2,19 +2,18 @@ package com.projects.oliver_graham.earquizmvp.data.quiz
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import com.projects.oliver_graham.earquizmvp.data.QuizQuestion
+import com.projects.oliver_graham.earquizmvp.R
+import com.projects.oliver_graham.earquizmvp.data.musictheory.Note
 
 sealed class Quiz private constructor(
     val quizIndex: Int = 0,
     val title: String = "",
     val descriptions: List<String> = listOf(),
-    val isEnabled: Boolean = false,
+    val isEnabled: Boolean = false,             // if quiz is supported yet
     var isInProgress: Boolean = false,
-    var totalQuestions: Int = 5,
+    var totalQuestions: Int = 1,
     var currentQuestion: QuizQuestion = QuizQuestion()
 ) {
-
-    // TODO this will be only place that can access the repo. That should be good?
     private object MelodicIntervalQuiz : Quiz(
         quizIndex = 0,
         title = "Melodic Intervals",
@@ -31,7 +30,7 @@ sealed class Quiz private constructor(
         quizIndex = 2,
         title = "Random Interval Mix",
         descriptions = QuizRepository.getRandomIntervalsQuizDescription(),
-        isEnabled = true
+        isEnabled = false
     )
     private object EasyChordQuiz : Quiz(
         quizIndex = 3,
@@ -52,18 +51,30 @@ sealed class Quiz private constructor(
         isEnabled = false
     )
     private object FakeQuiz : Quiz()  // this serves as the initial value for the mutable state
-                                        // is there another way? Couldn't find one
+                                      // is there another way? Couldn't find one
 
+    // public static api for all things quiz related
     companion object {
         private val quizInProgress: MutableState<Quiz> = mutableStateOf(value = FakeQuiz)
 
-        fun getQuizInProgress(): Quiz = quizInProgress.value
-
         fun setQuizInProgress(quiz: Quiz) {
-            stopCurrentQuiz()   // set false regardless?
+            stopCurrentQuiz()           // set false regardless
             quizInProgress.value = quiz
             startCurrentQuiz()
         }
+
+        fun getQuizInProgress(): Quiz = quizInProgress.value
+
+        fun setCurrentQuestion(id: Int, text: String, firstNote: Note, secondNote: Note) {
+            quizInProgress.value.currentQuestion = QuizQuestion(
+                id = id,
+                text = text,
+                clefsImage = R.drawable.treble_and_bass_clef,
+                firstNote = firstNote.imageId,
+                secondNote = secondNote.imageId
+            )
+        }
+        fun getCurrentQuestion(): QuizQuestion = quizInProgress.value.currentQuestion
 
         fun startCurrentQuiz() { quizInProgress.value.isInProgress = true }
         fun stopCurrentQuiz() { quizInProgress.value.isInProgress = false }
@@ -90,8 +101,6 @@ sealed class Quiz private constructor(
             1 to HarmonicIntervalQuiz,
             2 to RandomIntervalsQuiz
         )*/
-
     }
-
 }
 

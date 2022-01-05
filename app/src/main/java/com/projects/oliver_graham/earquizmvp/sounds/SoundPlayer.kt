@@ -6,9 +6,9 @@ import android.media.AudioAttributes
 import android.media.SoundPool
 import kotlinx.coroutines.delay
 
-private const val MAX_STREAMS = 3
-private const val START_PITCH = 40
-private const val END_PITCH = 65
+private const val MAX_STREAMS = 3       // change to play more notes simultaneously
+private const val START_PITCH = 40      // c3
+private const val END_PITCH = 65        // c5
 
 @Immutable
 class SoundPlayer(

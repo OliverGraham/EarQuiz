@@ -7,7 +7,6 @@ object QuizRepository {
     fun getEasyChordQuizDescription(): List<String> = easyChordQuizDescription
     fun getMediumChordQuizDescription(): List<String> = mediumChordQuizDescription
     fun getRandomMixQuizDescription(): List<String> = randomMixQuizDescription
-
 }
 
 // HomeScreen Data

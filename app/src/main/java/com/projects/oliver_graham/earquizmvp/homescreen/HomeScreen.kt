@@ -31,7 +31,7 @@ import com.projects.oliver_graham.earquizmvp.ui.CenteredContentRow
 import com.projects.oliver_graham.earquizmvp.ui.CircularIconButton
 import com.projects.oliver_graham.earquizmvp.ui.LargeText
 
-// TODO: Refactor this screen
+// TODO: Refactor this file
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi

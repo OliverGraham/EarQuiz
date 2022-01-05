@@ -50,10 +50,11 @@ fun NavGraphBuilder.homeNavGraph(
             QuizScreen(viewModel = quizScreenViewModel)
         }
 
+        // send negative argument to turn positive; exit transition needs positive only for this screen
         composable(
             route = Screen.LeaderboardScreen.route,
             enterTransition = enterTransition(),
-            exitTransition = exitTransition(offset = -500),      //
+            exitTransition = exitTransition(offset = -500),
             popEnterTransition = popEnterTransition(),
             popExitTransition = popExitTransition()
         ) { _ ->

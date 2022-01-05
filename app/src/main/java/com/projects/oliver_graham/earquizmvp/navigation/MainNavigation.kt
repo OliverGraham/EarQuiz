@@ -35,6 +35,7 @@ import com.projects.oliver_graham.earquizmvp.R
 import com.projects.oliver_graham.earquizmvp.authentication.CreateAccountScreenViewModel
 import com.projects.oliver_graham.earquizmvp.authentication.LoginScreenViewModel
 import com.projects.oliver_graham.earquizmvp.data.FirebaseController
+import com.projects.oliver_graham.earquizmvp.data.musictheory.MusicTheory
 import com.projects.oliver_graham.earquizmvp.data.quiz.Quiz
 import com.projects.oliver_graham.earquizmvp.homescreen.HomeScreenViewModel
 import com.projects.oliver_graham.earquizmvp.leaderboardscreen.LeaderboardScreenViewModel
@@ -54,6 +55,7 @@ fun MainNavigation(
     val navWrapper = remember { NavigationController(navController) }
     val firebaseController = remember { FirebaseController(navWrapper, context) }
     val quizController = remember { Quiz }
+    val musicTheory = remember { MusicTheory }
 
     BackGroundImage {
         Scaffold(
@@ -93,7 +95,7 @@ fun MainNavigation(
                 HomeScreenViewModel(navWrapper, quizController)
             }
             val quizScreenViewModel = remember {
-                QuizScreenViewModel(navWrapper, firebaseController, quizController, soundPlayer)
+                QuizScreenViewModel(navWrapper, firebaseController, quizController, musicTheory, soundPlayer)
             }
             val leaderboardScreenViewModel = remember {
                 LeaderboardScreenViewModel(navWrapper, firebaseController)

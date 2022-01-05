@@ -7,8 +7,6 @@ import androidx.navigation.NavController
 class NavigationController(
     private val navController: NavController
 ) {
-
-    // TODO Add selectedItemIndex here to help with bottom nav bar. Could it also help with back button?
     val showBottomNavBar: MutableState<Boolean> = mutableStateOf(value = false)
     val selectedItemIndex: MutableState<Int> = mutableStateOf(value = 0)
 

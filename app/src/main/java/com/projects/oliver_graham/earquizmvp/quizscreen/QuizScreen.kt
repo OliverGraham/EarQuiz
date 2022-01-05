@@ -25,7 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.projects.oliver_graham.earquizmvp.data.QuizQuestion
+import com.projects.oliver_graham.earquizmvp.data.quiz.QuizQuestion
 import com.projects.oliver_graham.earquizmvp.ui.*
 import kotlinx.coroutines.Job
 

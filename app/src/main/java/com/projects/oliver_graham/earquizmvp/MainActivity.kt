@@ -1,3 +1,10 @@
+/**
+ *  Author:      Oliver Graham
+ *  Email:       olivergraham916@gmail.com
+ *  Please note: Sounds played when running on the emulator are choppy, but are
+ *  perfectly smooth when running on a real device
+ */
+
 package com.projects.oliver_graham.earquizmvp
 
 import android.os.Build
@@ -27,13 +34,11 @@ class MainActivity : ComponentActivity() {
             EarQuizMVPTheme {
 
                 val systemUiController = rememberSystemUiController()
-                systemUiController.setStatusBarColor (
-                    color = MaterialTheme.colors.primary
-                )
-                systemUiController.setNavigationBarColor(
-                    color = MaterialTheme.colors.background
-                )
-                MainNavigation(context = application, SoundPlayer(application))
+                systemUiController.setStatusBarColor (color = MaterialTheme.colors.primary)
+                systemUiController.setNavigationBarColor(color = MaterialTheme.colors.background)
+
+                // begin loading all sounds into SoundPlayer on app start-up
+                MainNavigation(context = application, soundPlayer = SoundPlayer(application))
             }
         }
     }

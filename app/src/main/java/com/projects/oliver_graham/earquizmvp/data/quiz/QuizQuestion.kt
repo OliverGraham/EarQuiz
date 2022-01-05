@@ -1,9 +1,8 @@
-package com.projects.oliver_graham.earquizmvp.data
+package com.projects.oliver_graham.earquizmvp.data.quiz
 
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Immutable
 
-/*
 @Immutable
 data class QuizQuestion(
     val id: Int = 0,
@@ -12,4 +11,3 @@ data class QuizQuestion(
     @DrawableRes val firstNote: Int = 0,
     @DrawableRes val secondNote: Int = 0
 )
-*/

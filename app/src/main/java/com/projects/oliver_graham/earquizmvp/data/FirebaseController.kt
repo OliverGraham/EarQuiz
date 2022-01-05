@@ -83,6 +83,8 @@ class FirebaseController(
     fun updateUserDocument(user: User?) {
         firestore.collection(USERS_COLLECTION).document(user!!.uid)
             .set(user, SetOptions.merge())
+
+        currentUserDocument.value = user       // update reference after updating user info
     }
 
     fun getGoogleSignInIntent(): Intent {

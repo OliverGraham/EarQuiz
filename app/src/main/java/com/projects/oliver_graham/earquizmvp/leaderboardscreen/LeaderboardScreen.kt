@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.dp
 import com.projects.oliver_graham.earquizmvp.data.User
 import com.projects.oliver_graham.earquizmvp.homescreen.ExpandableRow
 
-
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
@@ -36,7 +35,7 @@ fun LeaderboardScreen(viewModel: LeaderboardScreenViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) { ->
-                ExpandableRow(                   // change name to ExpandableWideCard?
+                ExpandableRow(
                     title = user.userName,
                     quizDescriptions = listOf(
                         "Correct answers: ", user.correctAnswers.toString(),
@@ -49,6 +48,5 @@ fun LeaderboardScreen(viewModel: LeaderboardScreenViewModel) {
         }
 
     }
-
 
 }
