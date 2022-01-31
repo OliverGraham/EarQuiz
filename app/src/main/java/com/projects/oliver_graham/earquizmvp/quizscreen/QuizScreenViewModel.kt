@@ -28,29 +28,40 @@ class QuizScreenViewModel(
 
     val currentQuiz: Quiz
         get() = quizController.getQuizInProgress()
+    val currentQuestion: QuizQuestion
+        get() = quizController.getCurrentQuestion()
 
+    // controls state that is displayed
     val questionNumber:         MutableState<Int> = mutableStateOf(value = 1)
     val correctUserAnswers:     MutableState<Int> = mutableStateOf(value = 0)
     val incorrectUserAnswers:   MutableState<Int> = mutableStateOf(value = 0)
     val numberOfIntervalTaps:   MutableState<Int> = mutableStateOf(value = 0)
+
+    // this changes when user presses the (currently radio only) button and this
+    // value will be checked against the correct answer
     val currentUserChoice:      MutableState<Int> = mutableStateOf(value = 0)
 
+    // controls state that determines if buttons should be enabled or if
+    // dialog boxes should be shown
     val submitButtonEnabled:    MutableState<Boolean> = mutableStateOf(value = false)
     val playButtonEnabled:      MutableState<Boolean> = mutableStateOf(value = true)
     val nextButtonEnabled:      MutableState<Boolean> = mutableStateOf(value = true)
     val showAnswerDialog:       MutableState<Boolean> = mutableStateOf(value = false)
     val showFinishedDialog:     MutableState<Boolean> = mutableStateOf(value = false)
 
-    val currentCorrectAnswer: MutableState<QuizQuestion> = mutableStateOf(value = QuizQuestion())
-    val radioGroup: SnapshotStateList<QuizQuestion> = mutableStateListOf()
+    // is needed?
+    private val currentCorrectAnswer: MutableState<Int> = mutableStateOf(value = 0)
+
+    val radioGroup: SnapshotStateList<Pair<Int, String>> = mutableStateListOf()
 
     init {
+        // TODO: is this needed then?
         resetQuizPage()
     }
 
     private fun emptyRadioGroup() { radioGroup.removeRange(0, radioGroup.size) }
 
-    private fun resetQuizPage() {
+    fun resetQuizPage() {
 
         // unselect radio button, disable submit button, empty the four random choices and sound list
         currentUserChoice.value = 0
@@ -58,29 +69,17 @@ class QuizScreenViewModel(
         emptyRadioGroup()
         soundPlayer.emptyPitchList()
 
-        // three random intervals and one correct
-        val twoCurrentNotes: List<Note> = musicTheory.createTwoRandomNotes()
-        val noteOne = twoCurrentNotes[0]
-        val noteTwo = twoCurrentNotes[1]
-        val keyInterval: Int = kotlin.math.abs(n = noteOne.pitch - noteTwo.pitch)
-        val randomIntervals: List<Int> = musicTheory.getRandomIntervals(keyInterval)
+        if (currentQuiz.isInProgress) {
 
-        soundPlayer.addPitch(noteOne.pitch)
-        soundPlayer.addPitch(noteTwo.pitch)
+            // add new sounds and set correct value
+            soundPlayer.addPitches(currentQuestion.soundIds)
+            currentCorrectAnswer.value = currentQuestion.correctId
 
-        quizController.setCurrentQuestion(
-            id = keyInterval, text = musicTheory.getIntervalLabel(keyInterval),
-            firstNote = noteOne, secondNote = noteTwo
-        )
-        currentCorrectAnswer.value = quizController.getCurrentQuestion()
-
-        randomIntervals.forEach { interval ->
-            radioGroup.add(
-                QuizQuestion(id = interval, text = musicTheory.getIntervalLabel(interval))
-            )
+            // get labels, one correct and three incorrect and shuffle answers
+            quizController.getCurrentQuestionLabels()
+                .forEach { labelPair -> radioGroup.add(labelPair) }
+            radioGroup.shuffle()
         }
-
-        radioGroup.shuffle()
     }
 
     // starting values for new quiz question
@@ -95,16 +94,18 @@ class QuizScreenViewModel(
         showAnswerDialog.value = false
         showFinishedDialog.value = false
 
-        currentCorrectAnswer.value = QuizQuestion()
-        quizController.stopCurrentQuiz()
+        // TODO: double check that question doesn't need to be set here
         resetQuizPage()
     }
 
     fun getQuizName(): String = quizController.getQuizInProgress().title
 
-    fun determineOutcome(): Boolean = currentCorrectAnswer.value.id == currentUserChoice.value
+    fun determineOutcome(): Boolean = currentCorrectAnswer.value == currentUserChoice.value
 
-    fun convertUserChoiceToText(): String = musicTheory.getIntervalLabel(currentUserChoice.value)
+    fun convertUserChoiceToText(): String {
+
+        return musicTheory.getIntervalLabel(currentUserChoice.value)
+    }
 
     fun playSound(countTowardScore: Boolean = true) = viewModelScope.launch { ->
 
@@ -133,6 +134,8 @@ class QuizScreenViewModel(
             showFinishedDialog.value = !showFinishedDialog.value
         } else {
             questionNumber.value++
+            quizController.removeAskedQuestion()
+            currentCorrectAnswer.value = currentQuestion.correctId
             resetQuizPage()
         }
     }

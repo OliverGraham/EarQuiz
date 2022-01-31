@@ -2,17 +2,17 @@ package com.projects.oliver_graham.earquizmvp.data.quiz
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import com.projects.oliver_graham.earquizmvp.R
+import com.projects.oliver_graham.earquizmvp.data.musictheory.MusicTheory
 import com.projects.oliver_graham.earquizmvp.data.musictheory.Note
 
 sealed class Quiz private constructor(
     val quizIndex: Int = 0,
     val title: String = "",
     val descriptions: List<String> = listOf(),
-    val isEnabled: Boolean = false,             // if quiz is supported yet
+    val isEnabled: Boolean = false,              // if quiz is supported yet
+    val questionList: MutableList<QuizQuestion> = mutableListOf(),
     var isInProgress: Boolean = false,
-    var totalQuestions: Int = 1,
-    var currentQuestion: QuizQuestion = QuizQuestion()
+    var totalQuestions: Int = 3,                 // will change # of questions from HomeScreen later
 ) {
     private object MelodicIntervalQuiz : Quiz(
         quizIndex = 0,
@@ -65,16 +65,51 @@ sealed class Quiz private constructor(
 
         fun getQuizInProgress(): Quiz = quizInProgress.value
 
-        fun setCurrentQuestion(id: Int, text: String, firstNote: Note, secondNote: Note) {
-            quizInProgress.value.currentQuestion = QuizQuestion(
-                id = id,
-                text = text,
-                clefsImage = R.drawable.treble_and_bass_clef,
-                firstNote = firstNote.imageId,
-                secondNote = secondNote.imageId
-            )
+        fun createQuizQuestions(numberOfQuestions: Int) {
+
+            if (quizInProgress.value.isInProgress) {
+                for (i in 0..numberOfQuestions) {
+
+                    // three random intervals and one correct
+                    val twoCurrentNotes: List<Note> = MusicTheory.createTwoRandomNotes()
+                    val noteOne = twoCurrentNotes[0]
+                    val noteTwo = twoCurrentNotes[1]
+                    val keyInterval: Int = kotlin.math.abs(n = noteOne.pitch - noteTwo.pitch)
+                    val randomIntervals: List<Int> = MusicTheory.getRandomIntervals(keyInterval)
+
+                    quizInProgress.value.questionList.add(
+                        QuizQuestion(
+                            correctId = keyInterval,
+                            correctText = MusicTheory.getIntervalLabel(keyInterval),
+                            allAnswers = randomIntervals,
+                            soundIds = listOf(noteOne.pitch, noteTwo.pitch),
+                            firstNote = noteOne.imageId,
+                            secondNote = noteTwo.imageId
+                        )
+                    )
+                }
+            }
         }
-        fun getCurrentQuestion(): QuizQuestion = quizInProgress.value.currentQuestion
+
+        fun getCurrentQuestion(): QuizQuestion {
+            return quizInProgress.value.questionList[quizInProgress.value.questionList.size - 1]
+        }
+
+        // remove from end
+        fun removeAskedQuestion() {
+            quizInProgress.value.questionList.removeAt(quizInProgress.value.questionList.size - 1)
+        }
+
+        fun getCurrentQuestionLabels(): MutableList<Pair<Int, String>> {
+
+            val pairList: MutableList<Pair<Int, String>> = mutableListOf()
+
+            getCurrentQuestion().allAnswers.forEach { interval ->
+                pairList.add(Pair(interval, MusicTheory.getIntervalLabel(interval)))
+            }
+
+            return pairList
+        }
 
         fun startCurrentQuiz() { quizInProgress.value.isInProgress = true }
         fun stopCurrentQuiz() { quizInProgress.value.isInProgress = false }

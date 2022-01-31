@@ -8,7 +8,7 @@ import kotlinx.coroutines.delay
 
 private const val MAX_STREAMS = 3       // change to play more notes simultaneously
 private const val START_PITCH = 40      // c3
-private const val END_PITCH = 65        // c5
+private const val END_PITCH = 64        // c5
 
 @Immutable
 class SoundPlayer(
@@ -24,7 +24,7 @@ class SoundPlayer(
         initializeSounds()
     }
 
-    fun addPitch(pitch: Int) { pitches.add(pitch) }
+    fun addPitches(pitchList: List<Int>) { pitchList.forEach { pitch -> pitches.add(pitch) }  }
     fun emptyPitchList() { pitches.clear() }
 
     suspend fun play(quizIndex: Int) {
@@ -48,6 +48,7 @@ class SoundPlayer(
         delay(timeMillis = 1500)
     }
 
+    // TODO: can likely use all play() functions as this single function
     private suspend fun playChord() {
         pitches.forEach { pitch ->
             playNote(pitch = pitch)
@@ -73,7 +74,7 @@ class SoundPlayer(
 
     // load all sounds from .ogg files into SoundPool
     private fun initializeSounds() {
-        for (i in START_PITCH..END_PITCH)
+        for (i in START_PITCH..END_PITCH)               // inclusive range
             soundPoolMap[i] = soundPool.load(application,
                 application.resources.getIdentifier("pitch$i", "raw", application.packageName),
                 0

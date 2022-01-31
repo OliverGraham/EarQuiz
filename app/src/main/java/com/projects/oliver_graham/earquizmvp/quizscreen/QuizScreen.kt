@@ -56,10 +56,10 @@ fun QuizScreen(viewModel: QuizScreenViewModel) {
             numberOfIntervalTaps = viewModel.numberOfIntervalTaps.value
         )
         Column(modifier = Modifier.padding(16.dp)) { ->
-            for (quizQuestion in viewModel.radioGroup) {
+            for (labelPair in viewModel.radioGroup) {
                 TextAndRadio(
-                    text = quizQuestion.text,
-                    radioID = quizQuestion.id,
+                    text = labelPair.second,
+                    radioID = labelPair.first,
                     radioChoice = viewModel.currentUserChoice,
                     enableOtherUI = viewModel.submitButtonEnabled
                 )
@@ -85,7 +85,7 @@ fun QuizScreen(viewModel: QuizScreenViewModel) {
                 playSound = { viewModel.playSound(countTowardScore = false) },
                 playButtonEnabled = viewModel.playButtonEnabled,
                 nextButtonEnabled = viewModel.nextButtonEnabled,
-                currentCorrectAnswer = viewModel.currentCorrectAnswer.value
+                currentQuestion = viewModel.currentQuestion
             )
         }
 
@@ -121,7 +121,7 @@ private fun HandleAnswerDialog(
     playSound: (Boolean) -> Job,
     playButtonEnabled: MutableState<Boolean>,
     nextButtonEnabled: MutableState<Boolean>,
-    currentCorrectAnswer: QuizQuestion
+    currentQuestion: QuizQuestion
 ) {
     var userChoiceText: String? = null
     val title: String
@@ -144,14 +144,14 @@ private fun HandleAnswerDialog(
         resultTitle = title,
         scoreSign = scoreSign,
         scoreColor = scoreColor,
-        correctAnswerText = currentCorrectAnswer.text,
+        correctAnswerText = currentQuestion.correctText,
         incorrectAnswerText = userChoiceText,
         playSound = { playSound(false) },
         playButtonEnabled = playButtonEnabled,
         nextButtonEnabled = nextButtonEnabled,
-        clefsResourceId = currentCorrectAnswer.clefsImage,
-        noteOneResourceId = currentCorrectAnswer.firstNote,
-        noteTwoResourceId = currentCorrectAnswer.secondNote,
+        clefsResourceId = currentQuestion.clefsImage,
+        noteOneResourceId = currentQuestion.firstNote,
+        noteTwoResourceId = currentQuestion.secondNote,
         buttonText = "Next",
         buttonIcon = { Icon(Icons.Default.ArrowForward, contentDescription = "") }
     )

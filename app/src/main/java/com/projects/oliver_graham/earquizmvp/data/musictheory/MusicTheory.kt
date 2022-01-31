@@ -21,9 +21,10 @@ object MusicTheory {
         return createTwoRandomNotes()
     }
 
-    // returns random intervals, excluding the passed keyInterval
+    // is given the correct answer (keyInterval) and returns random intervals
     fun getRandomIntervals(keyInterval: Int, randomListSize: Int = 4): List<Int> {
 
+        // add correct answer to the list; don't add it twice
         val randomIntervalList = mutableListOf(keyInterval)
 
         while (randomIntervalList.size < randomListSize) {

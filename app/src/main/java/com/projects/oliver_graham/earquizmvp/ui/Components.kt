@@ -317,8 +317,7 @@ fun TextAndRadio(
             .padding(4.dp)
     ) { ->
         Column(
-            modifier = Modifier
-                .padding(start = 8.dp),
+            modifier = Modifier.padding(start = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) { ->
             LargeText(

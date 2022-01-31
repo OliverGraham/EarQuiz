@@ -91,12 +91,16 @@ fun MainNavigation(
             val createAccountScreenViewModel = remember {
                 CreateAccountScreenViewModel(navWrapper, firebaseController)
             }
-            val homeScreenViewModel = remember {
-                HomeScreenViewModel(navWrapper, quizController)
-            }
+
+            // TODO: initialize this view model in HomeScreen?
             val quizScreenViewModel = remember {
                 QuizScreenViewModel(navWrapper, firebaseController, quizController, musicTheory, soundPlayer)
             }
+
+            val homeScreenViewModel = remember {
+                HomeScreenViewModel(navWrapper, quizController, quizScreenViewModel)
+            }
+
             val leaderboardScreenViewModel = remember {
                 LeaderboardScreenViewModel(navWrapper, firebaseController)
             }
