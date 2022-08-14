@@ -84,6 +84,8 @@ fun MainNavigation(
 
         ) { innerPadding ->
 
+            // TODO: create view model factories
+
             // all ViewModels instantiated
             val loginScreenViewModel = remember {
                 LoginScreenViewModel(navWrapper, firebaseController)
@@ -92,7 +94,6 @@ fun MainNavigation(
                 CreateAccountScreenViewModel(navWrapper, firebaseController)
             }
 
-            // TODO: initialize this view model in HomeScreen?
             val quizScreenViewModel = remember {
                 QuizScreenViewModel(navWrapper, firebaseController, quizController, musicTheory, soundPlayer)
             }
@@ -276,7 +277,6 @@ private fun BottomBar(
                             color = if (navItemSelectedIndex.value == index) MaterialTheme.colors.secondary else MaterialTheme.colors.onPrimary
                         )
                            },
-                    label = { screen.route },
                     selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                     onClick = {
                         if (isTakingQuiz == true)
