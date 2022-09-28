@@ -9,24 +9,20 @@ import com.projects.oliver_graham.earquizmvp.quizscreen.QuizScreenViewModel
 class HomeScreenViewModel(
     private val navController: NavigationController,
     private val quizController: Quiz.Companion,
-    private val quizScreenViewModel: QuizScreenViewModel //TEMPORARY TEST
+    private val resetQuizPage: () -> Unit
     ) : ViewModel() {
 
     val quizzes: List<Quiz> = quizController.getAllQuizzes()
     fun isQuizInProgress() = quizController.isThereAQuizInProgress()
 
-    fun onQuizButtonClick(quiz: Quiz) {
-        // TODO: will get this from number picker or something, here on HomeScreen
-        val numberOfQuestions = 3
-
-        // TODO: combine this initialization logic?
-        quizController.setQuizInProgress(quiz)
-        quizController.createQuizQuestions(numberOfQuestions)
-
-        // should the VM be initialized here???
-        quizScreenViewModel.resetQuizPage()
-
+    fun onQuizButtonClick(quiz: Quiz, numberOfQuestions: Int) {
+        quizController.setQuizInProgress(quiz, numberOfQuestions)
+        resetQuizPage()
         navController.navQuizScreenSingleTop()
-
     }
+
+    fun navigateToQuizScreen() {
+        navController.navQuizScreenSingleTop()
+    }
+
 }

@@ -45,7 +45,6 @@ class FirebaseController(
 
     fun isUserLoggedIn() = auth.currentUser != null
 
-    // logout functionality will be added soon
     fun logOutUserFromFirebase() = auth.signOut()
     fun logOutUserFromGoogle() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)

@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import com.projects.oliver_graham.earquizmvp.data.musictheory.MusicTheory
 import com.projects.oliver_graham.earquizmvp.data.musictheory.Note
 
+// TODO: Redo this, it needs it badly (what was I thinking?)
+
 sealed class Quiz private constructor(
     val quizIndex: Int = 0,
     val title: String = "",
@@ -55,12 +57,16 @@ sealed class Quiz private constructor(
 
     // public static api for all things quiz related
     companion object {
-        private val quizInProgress: MutableState<Quiz> = mutableStateOf(value = FakeQuiz)
+        val quizInProgress: MutableState<Quiz> = mutableStateOf(value = FakeQuiz)
 
-        fun setQuizInProgress(quiz: Quiz) {
-            stopCurrentQuiz()           // set false regardless
+        fun setQuizInProgress(quiz: Quiz, numberOfQuestions: Int) {
+            // stopCurrentQuiz()           // set false regardless
+            // startCurrentQuiz()
             quizInProgress.value = quiz
-            startCurrentQuiz()
+            quizInProgress.value.isInProgress = true
+            quiz.totalQuestions = numberOfQuestions
+            createQuizQuestions(numberOfQuestions)
+            //startCurrentQuiz()
         }
 
         fun getQuizInProgress(): Quiz = quizInProgress.value
@@ -92,12 +98,12 @@ sealed class Quiz private constructor(
         }
 
         fun getCurrentQuestion(): QuizQuestion {
-            return quizInProgress.value.questionList[quizInProgress.value.questionList.size - 1]
+            return quizInProgress.value.questionList[quizInProgress.value.questionList.lastIndex]
         }
 
         // remove from end
         fun removeAskedQuestion() {
-            quizInProgress.value.questionList.removeAt(quizInProgress.value.questionList.size - 1)
+            quizInProgress.value.questionList.removeAt(quizInProgress.value.questionList.lastIndex)
         }
 
         fun getCurrentQuestionLabels(): MutableList<Pair<Int, String>> {

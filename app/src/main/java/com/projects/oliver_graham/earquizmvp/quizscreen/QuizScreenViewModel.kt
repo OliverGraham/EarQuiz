@@ -132,6 +132,8 @@ class QuizScreenViewModel(
         if (questionNumber.value == currentQuiz.totalQuestions) {
             saveResultsToFirestore()
             showFinishedDialog.value = !showFinishedDialog.value
+            quizController.stopCurrentQuiz()
+            // todo: stop bottomNavBar
         } else {
             questionNumber.value++
             quizController.removeAskedQuestion()
