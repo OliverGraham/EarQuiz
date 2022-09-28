@@ -1,6 +1,8 @@
 package com.projects.oliver_graham.earquizmvp.navigation
 
+import android.app.Activity
 import android.content.Context
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -20,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -76,7 +79,7 @@ fun MainNavigation(
                         Screen.LeaderboardScreen
                     ),
                     showBottomNavBar = navWrapper.showBottomNavBar.value,
-                    isTakingQuiz = quizController.getQuizInProgress().isInProgress,
+                    quizController = quizController,
                     navItemSelectedIndex = navWrapper.selectedItemIndex
                 )
             },
@@ -99,12 +102,27 @@ fun MainNavigation(
             }
 
             val homeScreenViewModel = remember {
-                HomeScreenViewModel(navWrapper, quizController, quizScreenViewModel)
+                HomeScreenViewModel(navWrapper, quizController) { quizScreenViewModel.resetQuizPage() }
             }
 
             val leaderboardScreenViewModel = remember {
                 LeaderboardScreenViewModel(navWrapper, firebaseController)
             }
+
+            val activity = (LocalContext.current as? Activity)
+
+            BackHandler(
+                enabled = navWrapper.showBottomNavBar.value,
+                onBack = {
+                    if (navWrapper.showBottomNavBar.value) {
+                        quizController.stopCurrentQuiz()
+                        activity?.finish()
+                    } else {
+                        navController.popBackStack()
+                    }
+
+                }
+            )
 
             AnimatedNavHost(
                 navController = navController,
@@ -130,7 +148,7 @@ fun MainNavigation(
 
 
 @Composable
-fun TopBar(
+private fun TopBar(
     navigationController: NavigationController,
     firebaseController: FirebaseController,
     atLoginScreen: Boolean,
@@ -257,7 +275,7 @@ private fun BottomBar(
     navController: NavController,
     screenList: List<Screen>,
     showBottomNavBar: Boolean,
-    isTakingQuiz: Boolean?,
+    quizController: Quiz.Companion,
     navItemSelectedIndex: MutableState<Int>
 ) {
 
@@ -279,7 +297,7 @@ private fun BottomBar(
                            },
                     selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                     onClick = {
-                        if (isTakingQuiz == true)
+                        if (quizController.quizInProgress.value.isInProgress)
                             bottomNavClick(
                                 navController = navController,
                                 route = screen.route,
