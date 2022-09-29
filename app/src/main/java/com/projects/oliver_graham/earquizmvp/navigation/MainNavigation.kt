@@ -109,7 +109,7 @@ fun MainNavigation(
                 LeaderboardScreenViewModel(navWrapper, firebaseController)
             }
 
-            val activity = (LocalContext.current as? Activity)
+            /*val activity = (LocalContext.current as? Activity)
 
             BackHandler(
                 enabled = navWrapper.showBottomNavBar.value,
@@ -122,7 +122,7 @@ fun MainNavigation(
                     }
 
                 }
-            )
+            )*/
 
             AnimatedNavHost(
                 navController = navController,
@@ -144,6 +144,14 @@ fun MainNavigation(
             }
         }
     }
+}
+
+private fun onBackButtonPressed(
+    activity: Activity?,
+    quizController: Quiz.Companion,
+    selectedItemIndex: MutableState<Int>
+) {
+
 }
 
 
@@ -286,6 +294,25 @@ private fun BottomBar(
         BottomNavigation { ->
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
+
+            // override back-button
+            val activity = (LocalContext.current as? Activity)
+            BackHandler(
+                enabled = showBottomNavBar,
+                onBack = {
+                    when (navItemSelectedIndex.value) {
+                        Screen.HomeScreen.screenIndex -> {
+                            quizController.stopCurrentQuiz()
+                            activity?.finish()
+                        }
+                        else -> {
+                            navItemSelectedIndex.value = 0
+                            navController.popBackStack()
+                        }
+                    }
+                }
+            )
+
             screenList.forEachIndexed { index, screen ->
                 BottomNavigationItem(
                     icon = {
