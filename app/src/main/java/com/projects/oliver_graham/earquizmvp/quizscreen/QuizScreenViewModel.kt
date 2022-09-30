@@ -26,21 +26,25 @@ class QuizScreenViewModel(
     private val soundPlayer: SoundPlayer
     ) : ViewModel() {
 
+    /** */
     val currentQuiz: Quiz
         get() = quizController.getQuizInProgress()
     val currentQuestion: QuizQuestion
         get() = quizController.getCurrentQuestion()
 
+    /** */
     // controls state that is displayed
     val questionNumber:         MutableState<Int> = mutableStateOf(value = 1)
     val correctUserAnswers:     MutableState<Int> = mutableStateOf(value = 0)
     val incorrectUserAnswers:   MutableState<Int> = mutableStateOf(value = 0)
     val numberOfIntervalTaps:   MutableState<Int> = mutableStateOf(value = 0)
 
+    /** */
     // this changes when user presses the (currently radio only) button and this
     // value will be checked against the correct answer
     val currentUserChoice:      MutableState<Int> = mutableStateOf(value = 0)
 
+    /** */
     // controls state that determines if buttons should be enabled or if
     // dialog boxes should be shown
     val submitButtonEnabled:    MutableState<Boolean> = mutableStateOf(value = false)
@@ -59,8 +63,10 @@ class QuizScreenViewModel(
         resetQuizPage()
     }
 
+    /** */
     private fun emptyRadioGroup() { radioGroup.removeRange(0, radioGroup.size) }
 
+    /** */
     fun resetQuizPage() {
 
         // unselect radio button, disable submit button, empty the four random choices and sound list
@@ -82,7 +88,7 @@ class QuizScreenViewModel(
         }
     }
 
-    // starting values for new quiz question
+    /** starting values for new quiz question */
     fun resetQuizScreen() {
         questionNumber.value = 1
         correctUserAnswers.value = 0
@@ -98,15 +104,28 @@ class QuizScreenViewModel(
         resetQuizPage()
     }
 
-    fun getQuizName(): String = quizController.getQuizInProgress().title
+    /** A sad hack to format the quiz title - but priority management time saver! */
+    fun getQuizName(): String {
 
+        val title = quizController.getQuizInProgress().title
+
+        if (title == "Harmonic Intervals") {
+            return "Harmonic\nIntervals"
+        }
+
+        return title
+    }
+
+    /** */
     fun determineOutcome(): Boolean = currentCorrectAnswer.value == currentUserChoice.value
 
+    /** */
     fun convertUserChoiceToText(): String {
 
         return musicTheory.getIntervalLabel(currentUserChoice.value)
     }
 
+    /** */
     fun playSound(countTowardScore: Boolean = true) = viewModelScope.launch { ->
 
         playButtonEnabled.value = false
@@ -120,6 +139,7 @@ class QuizScreenViewModel(
         playButtonEnabled.value = true
     }
 
+    /** */
     fun answerDialogDismissRequest(outcome: Boolean) {
         showAnswerDialog.value = !showAnswerDialog.value
 
@@ -142,9 +162,13 @@ class QuizScreenViewModel(
         }
     }
 
+    /** */
     fun navToHomeScreen() { navController.navHomeScreenPopAndTop() }
+
+    /** */
     fun navToLeaderboardScreen() { navController.navLeaderboardScreenPopAndTop() }
 
+    /** */
     // later, could save results of individual quizzes. For now, just save right and wrong answers
     private fun saveResultsToFirestore() {
 
