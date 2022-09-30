@@ -10,10 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.rounded.MusicNote
@@ -27,6 +24,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.projects.oliver_graham.earquizmvp.data.quiz.Quiz
 import com.projects.oliver_graham.earquizmvp.ui.CenteredContentRow
 import com.projects.oliver_graham.earquizmvp.ui.CircularIconButton
 import com.projects.oliver_graham.earquizmvp.ui.LargeText
@@ -62,16 +60,82 @@ fun HomeScreen(
                     mutableStateOf(value = (quiz.isEnabled && !takingQuiz.value) || quiz.isInProgress)
                 }
 
+                val expanded = remember { mutableStateOf(value = false) }
+
+                // TODO: Refactor this button + dropdown
                 CircularIconButton(
-                    onClick = { viewModel.onQuizButtonClick(quiz = quiz) },
+                    onClick = {
+
+                        // show dropdown to pick number of questions, if quiz not in progress
+                        if (viewModel.isQuizInProgress()) {
+                            viewModel.navigateToQuizScreen()
+                        } else {
+                            expanded.value = !expanded.value
+                        }
+
+                    },
                     icon = Icons.Default.ArrowForward,
                     mutableEnabled = isIconButtonEnabled,
                     buttonBackgroundColor =
                         if (isIconButtonEnabled.value) Color.Unspecified
                         else Color(color = 0xFFB0BEC5)      // BlueGray200
                 )
+
+                NumberPickerDropdown(
+                    expanded = expanded.value,
+                    onChangeExpanded = { toggledValue ->
+                        expanded.value = toggledValue
+                    },
+                    quiz = quiz,
+                    onNumberPick = { theQuiz, number ->
+                        viewModel.onQuizButtonClick(theQuiz, number)
+                    }
+                )
             }
             Spacer(modifier = Modifier.padding(vertical = 8.dp))
+
+        }
+
+    }
+}
+
+// TODO: Refactor this function's parameters
+@Composable
+private fun NumberPickerDropdown(
+    expanded: Boolean,
+    onChangeExpanded: (Boolean) -> Unit,
+    quiz: Quiz,
+    onNumberPick: (Quiz, Int) -> Unit
+) {
+
+    val suggestions = (3..10)
+
+    Box { ->
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { onChangeExpanded(false) },
+        ) { ->
+            Text(text = "  ${quiz.title}:  ")
+            Text(text = "  How many questions?  ")
+            suggestions.forEach { label ->
+                Divider(modifier = Modifier.padding(1.dp))
+                DropdownMenuItem(
+                    onClick = {
+                        onChangeExpanded(false)
+                        onNumberPick(quiz, label)
+                    },
+
+                    ) { ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) { ->
+                        Text(text = label.toString())
+                    }
+                }
+
+            }
         }
 
     }
@@ -176,7 +240,7 @@ fun ExpandableRow(
                     color = textColor,
                     textAlign = TextAlign.Center
                 )
-                Icon(Icons.Rounded.MusicNote,       // change to some music note
+                Icon(Icons.Rounded.MusicNote,
                     contentDescription = "",
                     modifier = Modifier.rotate(arrowRotationDegree),
                     tint =  textColor

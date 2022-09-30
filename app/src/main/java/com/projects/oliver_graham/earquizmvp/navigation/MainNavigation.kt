@@ -1,6 +1,8 @@
 package com.projects.oliver_graham.earquizmvp.navigation
 
+import android.app.Activity
 import android.content.Context
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -20,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -27,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -63,20 +67,16 @@ fun MainNavigation(
                  TopBar(
                      navigationController = navWrapper,
                      firebaseController = firebaseController,
-                     atLoginScreen = navWrapper.showBottomNavBar.value,
+                     atHomeScreenFlow = navWrapper.showBottomNavBar.value,
                      endQuiz =  { quizController.stopCurrentQuiz() }
                  )
             },
             bottomBar = {
                 BottomBar(
                     navController = navController,
-                    screenList = listOf(
-                        Screen.HomeScreen,
-                        Screen.QuizScreen,
-                        Screen.LeaderboardScreen
-                    ),
+                    screenList = Screen.getHomeScreensList(),
                     showBottomNavBar = navWrapper.showBottomNavBar.value,
-                    isTakingQuiz = quizController.getQuizInProgress().isInProgress,
+                    quizController = quizController,
                     navItemSelectedIndex = navWrapper.selectedItemIndex
                 )
             },
@@ -99,7 +99,7 @@ fun MainNavigation(
             }
 
             val homeScreenViewModel = remember {
-                HomeScreenViewModel(navWrapper, quizController, quizScreenViewModel)
+                HomeScreenViewModel(navWrapper, quizController) { quizScreenViewModel.resetQuizPage() }
             }
 
             val leaderboardScreenViewModel = remember {
@@ -128,12 +128,11 @@ fun MainNavigation(
     }
 }
 
-
 @Composable
-fun TopBar(
+private fun TopBar(
     navigationController: NavigationController,
     firebaseController: FirebaseController,
-    atLoginScreen: Boolean,
+    atHomeScreenFlow: Boolean,
     endQuiz: () -> Unit
 ) {
     val expanded = remember { mutableStateOf(value = false) }
@@ -144,62 +143,74 @@ fun TopBar(
     ) { ->
         Image(
             painterResource(id = R.drawable.earquiz_header_logo),
-            contentDescription = "",
+            contentDescription = "EarQuiz logo",
             modifier = Modifier.padding(4.dp)
         )
         Column { ->
-            Icon(
-                Icons.Rounded.AccountCircle,
-                modifier = Modifier
-                    .size(40.dp)
-                    .shadow(elevation = 20.dp, shape = CircleShape)
-                    .clickable { if (atLoginScreen) expanded.value = true },
-                contentDescription = "",
-                tint = MaterialTheme.colors.primary
+            AccountIcon(
+                atHomeScreenFlow = atHomeScreenFlow,
+                expanded = expanded
             )
-            DropdownMenu(
-                modifier = Modifier.background(color = MaterialTheme.colors.background),
-                expanded = expanded.value,
-                onDismissRequest = { expanded.value = false }
-            ) { ->
-                if (atLoginScreen) {
-
-                    if (firebaseController.isUserLoggedIn()) {
-
-                        AccountIconInnerText(text = "Logged in as:")
-                        LoggedInTextName(firebaseController.getUserDocument()?.userName)
-                        Divider(modifier = Modifier.padding(1.dp))
-
-                        DropdownIcon(
-                            rowClick = { expanded.value = false },
-                            icon = Icons.Rounded.Logout,
-                            iconClick = {
-                                expanded.value = false
-                                firebaseController.logOutUserFromFirebase()
-                                firebaseController.logOutUserFromGoogle()
-                                endQuiz()
-                            }
-                        )
-                        Divider(modifier = Modifier.padding(1.dp))
-                    }
-                    DropdownIcon(
-                        rowClick = { expanded.value = false },
-                        icon = Icons.Rounded.Login,
-                        iconClick = {
-                            expanded.value = false
-                            firebaseController.logOutUserFromFirebase()
-                            firebaseController.logOutUserFromGoogle()
-                            navigationController.navLoginScreen()
-                            endQuiz()
-                        }
-                    )
-
-                }
-            }
+            AccountDropdownMenu(
+                navigationController = navigationController,
+                firebaseController = firebaseController,
+                atHomeScreenFlow = atHomeScreenFlow,
+                expanded = expanded,
+                endQuiz = endQuiz
+            )
         }
-
     }
 }
+
+@Composable
+private fun AccountIcon(
+    atHomeScreenFlow: Boolean,
+    expanded: MutableState<Boolean>
+) {
+    Icon(
+        Icons.Rounded.AccountCircle,
+        modifier = Modifier
+            .size(40.dp)
+            .shadow(elevation = 20.dp, shape = CircleShape)
+            .clickable { if (atHomeScreenFlow) expanded.value = true },
+        contentDescription = "",
+        tint = MaterialTheme.colors.primary
+    )
+}
+
+@Composable
+private fun AccountDropdownMenu(
+    navigationController: NavigationController,
+    firebaseController: FirebaseController,
+    atHomeScreenFlow: Boolean,
+    expanded: MutableState<Boolean>,
+    endQuiz: () -> Unit
+) {
+    DropdownMenu(
+        modifier = Modifier.background(color = MaterialTheme.colors.background),
+        expanded = expanded.value,
+        onDismissRequest = { expanded.value = false }
+    ) { ->
+        if (atHomeScreenFlow) {
+            val isLoggedIn = firebaseController.isUserLoggedIn()
+            if (isLoggedIn) {
+                DropdownMenuLoggedIn(
+                    firebaseController = firebaseController,
+                    expanded = expanded,
+                    endQuiz = endQuiz
+                )
+            }
+            DropdownMenuLogout(
+                navigationController = navigationController,
+                firebaseController = firebaseController,
+                isLoggedIn = isLoggedIn,
+                expanded = expanded,
+                endQuiz = endQuiz
+            )
+        }
+    }
+}
+
 
 @Composable
 private fun AccountIconInnerText(
@@ -217,6 +228,67 @@ private fun AccountIconInnerText(
 }
 
 @Composable
+private fun DropdownMenuLoggedIn(
+    firebaseController: FirebaseController,
+    expanded: MutableState<Boolean>,
+    endQuiz: () -> Unit
+) {
+    AccountIconInnerText(text = "Logged in as:")
+    LoggedInTextName(firebaseController.getUserDocument()?.userName)
+    DropdownDivider()
+
+    AccountIconInnerText(text = "Use anonymously?")
+    DropdownIcon(
+        rowClick = { expanded.value = false },
+        icon = Icons.Rounded.Logout,
+        iconClick = {
+            expanded.value = false
+            firebaseController.logOutUserFromFirebase()
+            firebaseController.logOutUserFromGoogle()
+            endQuiz()
+        }
+    )
+    DropdownDivider()
+}
+
+@Composable
+private fun DropdownMenuLogout(
+    navigationController: NavigationController,
+    firebaseController: FirebaseController,
+    isLoggedIn: Boolean,
+    expanded: MutableState<Boolean>,
+    endQuiz: () -> Unit
+) {
+    val text = if (isLoggedIn) {
+        "Login as other user?"
+    } else {
+        "Login"
+    }
+    AccountIconInnerText(text = text)
+    DropdownIcon(
+        rowClick = { expanded.value = false },
+        icon = Icons.Rounded.Login,
+        iconClick = {
+            expanded.value = false
+
+            if (isLoggedIn) {
+                firebaseController.logOutUserFromFirebase()
+                firebaseController.logOutUserFromGoogle()
+            }
+
+            navigationController.navLoginScreen()
+            endQuiz()
+        }
+    )
+
+}
+
+@Composable
+private fun DropdownDivider() {
+    Divider(modifier = Modifier.padding(1.dp))
+}
+
+@Composable
 private fun DropdownIcon(
     rowClick: () -> Unit,
     icon: ImageVector,
@@ -231,7 +303,7 @@ private fun DropdownIcon(
                 .size(36.dp)
                 .weight(weight = 1f)
                 .clickable { iconClick() },
-            contentDescription = "",
+            contentDescription = "Dropdown menu option",
             tint = MaterialTheme.colors.onPrimary
         )
     }
@@ -239,17 +311,17 @@ private fun DropdownIcon(
 
 @Composable
 private fun LoggedInTextName(userName: String?) {
-    val fancyUserName = buildAnnotatedString { ->
-        withStyle(style = SpanStyle(color = MaterialTheme.colors.onPrimary)
-        ) { ->
-            if (userName != null)
-                append(userName)
-        }
-    }
-    AccountIconInnerText(text = fancyUserName.toString(), color = MaterialTheme.colors.onPrimary)
+    AccountIconInnerText(
+        text = buildAnnotatedString { ->
+            withStyle(style = SpanStyle(color = MaterialTheme.colors.onPrimary)
+            ) { ->
+                if (userName != null)
+                    append(userName)
+            }
+        }.toString(),
+        color = MaterialTheme.colors.onPrimary
+    )
 }
-
-
 
 @ExperimentalAnimationApi
 @Composable
@@ -257,7 +329,7 @@ private fun BottomBar(
     navController: NavController,
     screenList: List<Screen>,
     showBottomNavBar: Boolean,
-    isTakingQuiz: Boolean?,
+    quizController: Quiz.Companion,
     navItemSelectedIndex: MutableState<Int>
 ) {
 
@@ -267,37 +339,110 @@ private fun BottomBar(
     ) { ->
         BottomNavigation { ->
             val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentDestination = navBackStackEntry?.destination
+
+            // override back-button to change behavior in Home-route
+            BackButtonHandler(
+                navController = navController,
+                quizController = quizController,
+                showBottomNavBar = showBottomNavBar,
+                navItemSelectedIndex = navItemSelectedIndex,
+            )
+
             screenList.forEachIndexed { index, screen ->
-                BottomNavigationItem(
-                    icon = {
-                        AnimatableIcon(
-                            imageVector = screen.icon,
-                            scale = if (navItemSelectedIndex.value == index) 1.75f else 1.0f,
-                            color = if (navItemSelectedIndex.value == index) MaterialTheme.colors.secondary else MaterialTheme.colors.onPrimary
-                        )
-                           },
-                    selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                    onClick = {
-                        if (isTakingQuiz == true)
-                            bottomNavClick(
-                                navController = navController,
-                                route = screen.route,
-                                navItemSelectedIndex = navItemSelectedIndex,
-                                index = index
-                            )
-                        else if (screen.route != Screen.QuizScreen.route)
-                            bottomNavClick(
-                                navController = navController,
-                                route = screen.route,
-                                navItemSelectedIndex = navItemSelectedIndex,
-                                index = index
-                            )
-                    }
+                this.BottomNavItem(
+                    navController = navController,
+                    quizController = quizController,
+                    screen = screen,
+                    currentDestination = navBackStackEntry?.destination,
+                    selectedIndex = navItemSelectedIndex,
+                    index = index
                 )
             }
         }
     }
+}
+
+@Composable
+private fun BackButtonHandler(
+    navController: NavController,
+    quizController: Quiz.Companion,
+    showBottomNavBar: Boolean,
+    navItemSelectedIndex: MutableState<Int>,
+) {
+    val activity = (LocalContext.current as? Activity)
+    BackHandler(
+        enabled = showBottomNavBar,
+        onBack = {
+            when (navItemSelectedIndex.value) {
+
+                // Stop quiz and exit if back button pressed on HomeScreen
+                Screen.HomeScreen.screenIndex -> {
+                    quizController.stopCurrentQuiz()
+                    activity?.finish()
+                }
+                else -> {
+
+                    // otherwise go back to HomeScreen
+                    navItemSelectedIndex.value = 0
+                    navController.popBackStack()
+                }
+            }
+        }
+    )
+}
+
+@Composable
+private fun RowScope.BottomNavItem(
+    navController: NavController,
+    quizController: Quiz.Companion,
+    screen: Screen,
+    currentDestination: NavDestination?,
+    selectedIndex: MutableState<Int>,
+    index: Int
+) {
+    BottomNavigationItem(
+        icon = {
+            BottomNavAnimatableIcon(
+                icon = screen.icon,
+                selectedIndex = selectedIndex.value,
+                currentIndex = index
+            )
+        },
+        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+        onClick = {
+            if (quizController.quizInProgress.value.isInProgress) {
+                bottomNavClick(
+                    navController = navController,
+                    route = screen.route,
+                    navItemSelectedIndex = selectedIndex,
+                    index = index
+                )
+            } else if (screen.route != Screen.QuizScreen.route) {
+                bottomNavClick(
+                    navController = navController,
+                    route = screen.route,
+                    navItemSelectedIndex = selectedIndex,
+                    index = index
+                )
+            }
+        }
+    )
+}
+
+@Composable
+private fun BottomNavAnimatableIcon(
+    icon: ImageVector,
+    selectedIndex: Int,
+    currentIndex: Int
+) {
+    AnimatableIcon(
+        imageVector = icon,
+        scale = if (selectedIndex == currentIndex) 1.75f else 1.0f,
+        color = if (selectedIndex == currentIndex)
+                    MaterialTheme.colors.secondary
+                else
+                    MaterialTheme.colors.onPrimary
+    )
 }
 
 private fun bottomNavClick(

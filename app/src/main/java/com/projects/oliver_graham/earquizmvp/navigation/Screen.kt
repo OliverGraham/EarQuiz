@@ -26,4 +26,26 @@ sealed class Screen(
         Screen(route = "create_account_screen", icon = Icons.Rounded.Calculate)
     object LeaderboardScreen :
         Screen(route = "leaderboard_screen", icon = Icons.Rounded.Score, screenIndex = LEADERBOARD_NAV_INDEX)
+
+    companion object {
+
+        fun getHomeScreensList() = listOf(HomeScreen, QuizScreen, LeaderboardScreen)
+
+        fun getScreenIndexFromRoute(route: String): Int =
+            when (route) {
+                HomeScreen.route -> {
+                    HOME_NAV_INDEX
+                }
+                QuizScreen.route -> {
+                    QUIZ_NAV_INDEX
+                }
+                LeaderboardScreen.route -> {
+                    LEADERBOARD_NAV_INDEX
+                }
+                else -> {
+                    -1
+                }
+            }
+
+    }
 }

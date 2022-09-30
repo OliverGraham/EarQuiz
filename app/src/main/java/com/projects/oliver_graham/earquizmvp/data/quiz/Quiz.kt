@@ -5,9 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import com.projects.oliver_graham.earquizmvp.data.musictheory.MusicTheory
 import com.projects.oliver_graham.earquizmvp.data.musictheory.Note
 
+// TODO: Redo this, it needs it badly (what was I thinking?)
+
 sealed class Quiz private constructor(
     val quizIndex: Int = 0,
     val title: String = "",
+    val quizScreenTitle: String = "",
     val descriptions: List<String> = listOf(),
     val isEnabled: Boolean = false,              // if quiz is supported yet
     val questionList: MutableList<QuizQuestion> = mutableListOf(),
@@ -17,12 +20,14 @@ sealed class Quiz private constructor(
     private object MelodicIntervalQuiz : Quiz(
         quizIndex = 0,
         title = "Melodic Intervals",
+        quizScreenTitle = "Melodic\nIntervals",
         descriptions = QuizRepository.getMelodicQuizDescriptions(),
         isEnabled = true
     )
     private object HarmonicIntervalQuiz : Quiz(
         quizIndex = 1,
         title = "Harmonic Intervals",
+        quizScreenTitle = "Harmonic\nIntervals",
         descriptions = QuizRepository.getHarmonicQuizDescriptions(),
         isEnabled = true
     )
@@ -55,17 +60,20 @@ sealed class Quiz private constructor(
 
     // public static api for all things quiz related
     companion object {
-        private val quizInProgress: MutableState<Quiz> = mutableStateOf(value = FakeQuiz)
+        val quizInProgress: MutableState<Quiz> = mutableStateOf(value = FakeQuiz)
 
-        fun setQuizInProgress(quiz: Quiz) {
-            stopCurrentQuiz()           // set false regardless
+        fun setQuizInProgress(quiz: Quiz, numberOfQuestions: Int) {
             quizInProgress.value = quiz
-            startCurrentQuiz()
+            quizInProgress.value.isInProgress = true
+            quiz.totalQuestions = numberOfQuestions
+            createQuizQuestions(numberOfQuestions)
         }
+
+        fun getQuizScreenTitle(): String = quizInProgress.value.title
 
         fun getQuizInProgress(): Quiz = quizInProgress.value
 
-        fun createQuizQuestions(numberOfQuestions: Int) {
+        private fun createQuizQuestions(numberOfQuestions: Int) {
 
             if (quizInProgress.value.isInProgress) {
                 for (i in 0..numberOfQuestions) {
@@ -92,12 +100,12 @@ sealed class Quiz private constructor(
         }
 
         fun getCurrentQuestion(): QuizQuestion {
-            return quizInProgress.value.questionList[quizInProgress.value.questionList.size - 1]
+            return quizInProgress.value.questionList[quizInProgress.value.questionList.lastIndex]
         }
 
         // remove from end
         fun removeAskedQuestion() {
-            quizInProgress.value.questionList.removeAt(quizInProgress.value.questionList.size - 1)
+            quizInProgress.value.questionList.removeAt(quizInProgress.value.questionList.lastIndex)
         }
 
         fun getCurrentQuestionLabels(): MutableList<Pair<Int, String>> {

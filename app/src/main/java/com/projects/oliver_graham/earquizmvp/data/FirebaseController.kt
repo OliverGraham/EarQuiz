@@ -45,8 +45,10 @@ class FirebaseController(
 
     fun isUserLoggedIn() = auth.currentUser != null
 
-    // logout functionality will be added soon
-    fun logOutUserFromFirebase() = auth.signOut()
+    fun logOutUserFromFirebase() {
+        toastMessage(message = "Logged out: ${currentUserDocument.value?.userName}")
+        auth.signOut()
+    }
     fun logOutUserFromGoogle() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(ID_TOKEN_GOOGLE)
@@ -64,7 +66,7 @@ class FirebaseController(
                     initializeUser()
                     auth.currentUser?.let { saveAuthenticatedUserAsNewDocument(it, userName, email) }
                 } else
-                    toastMessage(context, message = "Unable to create user")
+                    toastMessage(message = "Unable to create user")
             }
     }
 
@@ -75,7 +77,7 @@ class FirebaseController(
                     initializeUser()
                     navController.navHomeScreenPopBackstack()
                 } else
-                    toastMessage(context = context, message = "Invalid username/password")
+                    toastMessage(message = "Invalid username/password")
             }
 
     }
@@ -103,7 +105,7 @@ class FirebaseController(
             firebaseAuthWithGoogle(account.idToken!!)
 
         } catch (e: ApiException) {
-            toastMessage(context, message = "Google sign-in failed")
+            toastMessage(message = "Google sign-in failed")
         }
     }
 
@@ -129,7 +131,7 @@ class FirebaseController(
                         navController.navHomeScreenPopBackstack()
                     }
                 } else {
-                    toastMessage(context, message = "Unable to sign in")
+                    toastMessage(message = "Unable to sign in")
                 }
             }
     }
@@ -177,6 +179,6 @@ class FirebaseController(
         }
     }
 
-    private fun toastMessage(context: Context, message: String) =
+    private fun toastMessage(message: String) =
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }
