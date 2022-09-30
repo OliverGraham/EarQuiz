@@ -104,17 +104,8 @@ class QuizScreenViewModel(
         resetQuizPage()
     }
 
-    /** A sad hack to format the quiz title - but priority management time saver! */
-    fun getQuizName(): String {
-
-        val title = quizController.getQuizInProgress().title
-
-        if (title == "Harmonic Intervals") {
-            return "Harmonic\nIntervals"
-        }
-
-        return title
-    }
+    /** The quiz-screen title has a newline character in it */
+    fun getQuizName(): String =  quizController.getQuizInProgress().quizScreenTitle
 
     /** */
     fun determineOutcome(): Boolean = currentCorrectAnswer.value == currentUserChoice.value

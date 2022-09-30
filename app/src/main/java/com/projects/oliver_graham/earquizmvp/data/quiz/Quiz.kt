@@ -10,6 +10,7 @@ import com.projects.oliver_graham.earquizmvp.data.musictheory.Note
 sealed class Quiz private constructor(
     val quizIndex: Int = 0,
     val title: String = "",
+    val quizScreenTitle: String = "",
     val descriptions: List<String> = listOf(),
     val isEnabled: Boolean = false,              // if quiz is supported yet
     val questionList: MutableList<QuizQuestion> = mutableListOf(),
@@ -19,12 +20,14 @@ sealed class Quiz private constructor(
     private object MelodicIntervalQuiz : Quiz(
         quizIndex = 0,
         title = "Melodic Intervals",
+        quizScreenTitle = "Melodic\nIntervals",
         descriptions = QuizRepository.getMelodicQuizDescriptions(),
         isEnabled = true
     )
     private object HarmonicIntervalQuiz : Quiz(
         quizIndex = 1,
         title = "Harmonic Intervals",
+        quizScreenTitle = "Harmonic\nIntervals",
         descriptions = QuizRepository.getHarmonicQuizDescriptions(),
         isEnabled = true
     )
@@ -60,18 +63,17 @@ sealed class Quiz private constructor(
         val quizInProgress: MutableState<Quiz> = mutableStateOf(value = FakeQuiz)
 
         fun setQuizInProgress(quiz: Quiz, numberOfQuestions: Int) {
-            // stopCurrentQuiz()           // set false regardless
-            // startCurrentQuiz()
             quizInProgress.value = quiz
             quizInProgress.value.isInProgress = true
             quiz.totalQuestions = numberOfQuestions
             createQuizQuestions(numberOfQuestions)
-            //startCurrentQuiz()
         }
+
+        fun getQuizScreenTitle(): String = quizInProgress.value.title
 
         fun getQuizInProgress(): Quiz = quizInProgress.value
 
-        fun createQuizQuestions(numberOfQuestions: Int) {
+        private fun createQuizQuestions(numberOfQuestions: Int) {
 
             if (quizInProgress.value.isInProgress) {
                 for (i in 0..numberOfQuestions) {
