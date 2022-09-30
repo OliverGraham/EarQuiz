@@ -295,22 +295,12 @@ private fun BottomBar(
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
 
-            // override back-button
-            val activity = (LocalContext.current as? Activity)
-            BackHandler(
-                enabled = showBottomNavBar,
-                onBack = {
-                    when (navItemSelectedIndex.value) {
-                        Screen.HomeScreen.screenIndex -> {
-                            quizController.stopCurrentQuiz()
-                            activity?.finish()
-                        }
-                        else -> {
-                            navItemSelectedIndex.value = 0
-                            navController.popBackStack()
-                        }
-                    }
-                }
+            // override back-button to change behavior in Home-route
+            BackButtonHandler(
+                navController = navController,
+                quizController = quizController,
+                showBottomNavBar = showBottomNavBar,
+                navItemSelectedIndex = navItemSelectedIndex,
             )
 
             screenList.forEachIndexed { index, screen ->
@@ -343,6 +333,35 @@ private fun BottomBar(
             }
         }
     }
+}
+
+@Composable
+private fun BackButtonHandler(
+    navController: NavController,
+    quizController: Quiz.Companion,
+    showBottomNavBar: Boolean,
+    navItemSelectedIndex: MutableState<Int>,
+) {
+    val activity = (LocalContext.current as? Activity)
+    BackHandler(
+        enabled = showBottomNavBar,
+        onBack = {
+            when (navItemSelectedIndex.value) {
+
+                // Stop quiz and exit if back button pressed on HomeScreen
+                Screen.HomeScreen.screenIndex -> {
+                    quizController.stopCurrentQuiz()
+                    activity?.finish()
+                }
+                else -> {
+
+                    // otherwise go back to HomeScreen
+                    navItemSelectedIndex.value = 0
+                    navController.popBackStack()
+                }
+            }
+        }
+    )
 }
 
 private fun bottomNavClick(
