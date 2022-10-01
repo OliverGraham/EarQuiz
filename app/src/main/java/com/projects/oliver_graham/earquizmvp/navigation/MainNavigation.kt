@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Login
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.runtime.*
@@ -199,6 +200,7 @@ private fun AccountDropdownMenu(
                     expanded = expanded,
                     endQuiz = endQuiz
                 )
+                DropdownDivider()
             }
             DropdownMenuLogout(
                 navigationController = navigationController,
@@ -207,6 +209,13 @@ private fun AccountDropdownMenu(
                 expanded = expanded,
                 endQuiz = endQuiz
             )
+            if (isLoggedIn) {
+                DropdownDivider()
+                DropdownMenuDeleteUser(
+                    firebaseController = firebaseController,
+                    expanded = expanded
+                )
+            }
         }
     }
 }
@@ -248,7 +257,6 @@ private fun DropdownMenuLoggedIn(
             endQuiz()
         }
     )
-    DropdownDivider()
 }
 
 @Composable
@@ -280,8 +288,24 @@ private fun DropdownMenuLogout(
             endQuiz()
         }
     )
-
 }
+
+@Composable
+private fun DropdownMenuDeleteUser(
+    firebaseController: FirebaseController,
+    expanded: MutableState<Boolean>
+) {
+    AccountIconInnerText(text = "Delete account?")
+    DropdownIcon(
+        rowClick = { expanded.value = false },
+        icon = Icons.Rounded.DeleteForever,
+        iconClick = {
+            expanded.value = false
+            firebaseController.deleteUser()
+        }
+    )
+}
+
 
 @Composable
 private fun DropdownDivider() {

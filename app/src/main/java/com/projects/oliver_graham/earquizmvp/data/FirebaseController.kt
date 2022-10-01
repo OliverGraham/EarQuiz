@@ -109,6 +109,39 @@ class FirebaseController(
         }
     }
 
+    /** Delete user in auth and their firestore document */
+    fun deleteUser() {
+        deleteAuth()?.let { userId -> deleteDocument(userId) }
+    }
+
+    /** Delete currently signed in user's account and return their uid */
+    private fun deleteAuth(): String? {
+
+        val authUser = auth.currentUser ?: return null
+        val userId = authUser.uid
+
+        authUser.delete()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    toastMessage(message = "Deleted ${authUser.email}'s account")
+                }
+            }
+            .addOnFailureListener { error ->
+                toastMessage(message = "Error deleting user account: $error")
+            }
+
+        return userId
+    }
+
+    /** Delete Firestore document, given the document id */
+    private fun deleteDocument(id: String) {
+        firestore.collection(USERS_COLLECTION).document(id)
+            .delete()
+            .addOnFailureListener { error ->
+                toastMessage(message = "Error deleting document: $error")
+            }
+    }
+
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
 

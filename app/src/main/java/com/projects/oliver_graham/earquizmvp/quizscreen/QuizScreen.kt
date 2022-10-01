@@ -355,18 +355,21 @@ private fun TopRow(
 
             LargeText(
                 text = "$questionNumber/$totalQuestions",
+                fontSize = 32.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.padding(4.dp))
 
             LargeText(
                 text = "+ $correctUserAnswers",
+                fontSize = 32.sp,
                 color = Color(color = 0xFF689F38)   // regular green too bright
             )
             Spacer(modifier = Modifier.padding(4.dp))
 
             LargeText(
                 text = "- $incorrectUserAnswers",
+                fontSize = 32.sp,
                 color = Color.Red
             )
             Spacer(modifier = Modifier.padding(4.dp))
