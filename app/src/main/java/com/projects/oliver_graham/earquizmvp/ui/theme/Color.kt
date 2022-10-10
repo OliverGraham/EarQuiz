@@ -13,3 +13,11 @@ val LightBlue300 = Color(0xFF29B6F6)         // onPrimary
 val LightBlueA100 = Color(0xFF80D8FF)        // very light, could be accent color (borders)
 val BlueGray600 = Color(0xFF546E7A)          // primary
 val Teal200 = Color(0xFF03DAC5)              // secondary
+
+
+// for Dark color palette?
+val BlueGray100 = Color(0xCFD8DCFF)         // primary
+val LightBlue800 = Color(0xFF0277BD)        // primaryVariant
+val Teal800 = Color(0xFF00695C)             // secondary
+val Gray800 = Color(0xFF424242)             // background
+val LightBlue = Color(0xFF424242)             // background

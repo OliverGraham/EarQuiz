@@ -73,19 +73,24 @@ fun EyeBallIcon(
     // clickable icon
     Box(modifier = Modifier.clickable(onClick = { onClick() })
     ) { ->
-        if (clicked)
-            Image(
-                painterResource(id = R.drawable.open_eye),
-                contentDescription = "",
-                modifier = Modifier.fillMaxSize(0.075f)
-            )
-        else
-            Image(
-                painterResource(id = R.drawable.closed_eye),
-                contentDescription = "",
-                modifier = Modifier.fillMaxSize(0.075f)
-            )
+        val darkTheme = isSystemInDarkTheme()
+        val icon = if (clicked) {
+            if (darkTheme) R.drawable.open_eye_dark_theme else R.drawable.open_eye
+        } else {
+            if (darkTheme) R.drawable.closed_eye_dark_theme else R.drawable.closed_eye
+        }
+
+        EyeBall(icon = icon)
     }
+}
+
+@Composable
+private fun EyeBall(icon: Int) {
+    Image(
+        painterResource(id = icon),
+        contentDescription = "",
+        modifier = Modifier.fillMaxSize(fraction = 0.075f)
+    )
 }
 
 @Composable
@@ -94,7 +99,7 @@ fun GenericTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     text: String,
-    textStyle: TextStyle = LocalTextStyle.current,
+    textStyle: TextStyle = LocalTextStyle.current.copy(MaterialTheme.colors.secondaryVariant),
     label: String,
     readOnly: Boolean = false,
     enabled: Boolean = true,
@@ -113,7 +118,10 @@ fun GenericTextField(
         label = { Text(label) },
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
-        interactionSource = interactionSource
+        interactionSource = interactionSource,
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedLabelColor = MaterialTheme.colors.secondaryVariant
+        )
     )
 }
 
@@ -123,13 +131,40 @@ fun GenericTextField(
 fun CircularIconButton(
     onClick: () -> Unit,
     icon: ImageVector,
-    mutableEnabled: MutableState<Boolean> = mutableStateOf(true),
-    buttonBackgroundColor: Color = Color.Unspecified,
+    mutableEnabled: MutableState<Boolean> = mutableStateOf(value = true),
     size: Dp = 50.dp,
-    borderSize: Dp = 1.dp,
-    borderColor: Color = MaterialTheme.colors.secondary,
-    tint: Color = MaterialTheme.colors.primary
+    borderSize: Dp = 1.dp
 ) {
+
+    val buttonBackgroundColor: Color
+    val iconColor: Color
+    val borderColor: Color
+    if (isSystemInDarkTheme()) {
+        if (mutableEnabled.value) {
+            // enabled button dark color
+            buttonBackgroundColor = MaterialTheme.colors.background
+            iconColor = MaterialTheme.colors.secondary
+            borderColor = MaterialTheme.colors.secondary
+        } else {
+            // disabled dark color
+            buttonBackgroundColor = MaterialTheme.colors.background
+            iconColor = MaterialTheme.colors.primary
+            borderColor = MaterialTheme.colors.primary
+        }
+    } else {
+        if (mutableEnabled.value) {
+            // enabled light color
+            buttonBackgroundColor = MaterialTheme.colors.primary
+            iconColor = MaterialTheme.colors.secondary
+            borderColor = MaterialTheme.colors.secondary
+        } else {
+            // disabled light color
+            buttonBackgroundColor = MaterialTheme.colors.background
+            iconColor = MaterialTheme.colors.primary
+            borderColor = MaterialTheme.colors.primary
+        }
+    }
+
     IconButton(
         onClick = onClick,
         enabled = mutableEnabled.value,
@@ -143,19 +178,19 @@ fun CircularIconButton(
             .background(color = buttonBackgroundColor, shape = CircleShape)
 
     ) {
-        Icon(icon, contentDescription = "content description", tint = tint)
+        Icon(icon, contentDescription = "content description", tint = iconColor)
     }
 }
 
 @Composable
 fun MediumButton(
     modifier: Modifier = Modifier,
-    mutableEnabled: MutableState<Boolean> = mutableStateOf(true),
+    mutableEnabled: MutableState<Boolean> = mutableStateOf(value = true),
     onClick: () -> Unit,
     border: BorderStroke = BorderStroke(1.dp, MaterialTheme.colors.secondary),
     colors: ButtonColors = ButtonDefaults.buttonColors(),
     elevation: ButtonElevation? = ButtonDefaults.elevation(4.dp, 16.dp),
-    shape: Shape = RoundedCornerShape(25),
+    shape: Shape = RoundedCornerShape(percent = 25),
     content: @Composable RowScope.() -> Unit
 ) {
     Button(
@@ -171,67 +206,22 @@ fun MediumButton(
     )
 }
 
-// TODO: Figure out button animation
-//       create box that holds text and so replace every LargeButton with text
-enum class ComponentState { Pressed, Released }
-
 @Composable
 fun LargeButton(
     //modifier: Modifier = Modifier,
-    mutableEnabled: MutableState<Boolean> = mutableStateOf(true),
+    mutableEnabled: MutableState<Boolean> = mutableStateOf(value = true),
     onClick: () -> Unit,
     border: BorderStroke = BorderStroke(1.dp, MaterialTheme.colors.primaryVariant),
     colors: ButtonColors = ButtonDefaults.buttonColors(),
     elevation: ButtonElevation? = ButtonDefaults.elevation(4.dp, 16.dp),
-    shape: Shape = RoundedCornerShape(50),
+    shape: Shape = RoundedCornerShape(percent = 50),
     content: @Composable RowScope.() -> Unit
 ) {
-/*    var toState by remember { mutableStateOf(ComponentState.Released) }
-    val transition: Transition<ComponentState> = updateTransition(targetState = toState, label = "")
-    // Defines a float animation to scale x,y
-    val scaleX: Float by transition.animateFloat(
-        transitionSpec = { spring(stiffness = 50f) }, label = ""
-    ) { state ->
-        if (state == ComponentState.Pressed) 0.925f else 1f
-    }
-
-    val scaleY: Float by transition.animateFloat(
-        transitionSpec = { spring(stiffness = 50f) }, label = ""
-    ) { state ->
-        if (state == ComponentState.Pressed) 0.95f else 1f
-    }
-
-    val modifier = Modifier
-        .size(width = (220 * scaleX).dp, height = (60 * scaleY).dp)
-        .pointerInput(Unit) {
-        detectTapGestures(
-            onPress = {
-                toState = ComponentState.Pressed
-                tryAwaitRelease()
-                toState = ComponentState.Released
-            }
-        )
-    }*/
-
-    // OLD MODIFIER
-    //        modifier = Modifier
-    //            .size(width = 220.dp, height = 60.dp)
-    //            .alpha(0.825f),graphicsLayer(scaleX = scaleX, scaleY = scaleY)
-
-   // Box(
-    //    modifier = modifier
-           // .size(width = (220 * scaleX).dp, height = (60 * scaleY).dp)
-           // .alpha(0.825f)
-  //  ) {
-
         Button(
             onClick = onClick,
             modifier = Modifier
                 .size(width = 220.dp, height = 60.dp)
-                .alpha(0.825f),//.graphicsLayer(scaleX = scaleX, scaleY = scaleY),
-                //.size(width = (220 * scaleX).dp, height = (60 * scaleY).dp)
-               // .alpha(0.825f)
-                //.graphicsLayer(),
+                .alpha(0.825f),
             elevation = elevation,
             enabled = mutableEnabled.value,
             border = border,
@@ -248,42 +238,72 @@ fun LargeText(
     fontFamily: FontFamily? = null,
     fontSize: TextUnit = 22.sp,
     fontWeight: FontWeight? = null,
-    color: Color = Color.Unspecified,
+    color: Color = if (isSystemInDarkTheme()) MaterialTheme.colors.onPrimary else Color.Unspecified,
     textAlign: TextAlign? = null
 ) {
-/*    var toState by remember { mutableStateOf(ComponentState.Released) }
-    val transition: Transition<ComponentState> = updateTransition(targetState = toState, label = "")
-    // Defines a float animation to scale x,y
-    val scaleX: Float by transition.animateFloat(
-        transitionSpec = { spring(stiffness = 50f) }, label = ""
-    ) { state ->
-        if (state == ComponentState.Pressed) 0.925f else 1f
-    }
-
-    val scaleY: Float by transition.animateFloat(
-        transitionSpec = { spring(stiffness = 50f) }, label = ""
-    ) { state ->
-        if (state == ComponentState.Pressed) 0.95f else 1f
-    }
-
-    val modifier = Modifier
-        .pointerInput(Unit) {
-            detectTapGestures(
-                onPress = {
-                    toState = ComponentState.Pressed
-                    tryAwaitRelease()
-                    toState = ComponentState.Released
-                }
-            )
-        }*/
     Text(
-        //modifier = modifier.graphicsLayer(scaleX = scaleX, scaleY = scaleY),
         text = text,
         fontFamily = fontFamily,
         fontSize = fontSize,
         fontWeight = fontWeight,
         color = color,
         textAlign = textAlign
+    )
+}
+
+@Composable
+fun ThemeButton(
+    text: String,
+    onButtonClick: () -> Unit,
+    mutableEnabled: MutableState<Boolean>,
+    innerContent: (@Composable () -> Unit)? = null
+) {
+    val darkTheme = isSystemInDarkTheme()
+    LargeButton(
+        onClick = { onButtonClick() },
+        mutableEnabled = mutableEnabled,
+        border = getButtonBorder(
+            enabled = mutableEnabled.value,
+            darkTheme = darkTheme
+        ),
+    ) { ->
+
+        ButtonText(
+            text = text,
+            enabled = mutableEnabled.value,
+            darkTheme = darkTheme
+        )
+        if (innerContent != null) innerContent()
+    }
+}
+
+@Composable
+private fun getButtonBorder(
+    enabled: Boolean,
+    darkTheme: Boolean
+): BorderStroke {
+    return if (darkTheme) {
+        val color = if (enabled) MaterialTheme.colors.primaryVariant else MaterialTheme.colors.background
+        BorderStroke(1.dp, color)
+    } else {
+        val color = if (enabled) MaterialTheme.colors.onPrimary else MaterialTheme.colors.primary
+        BorderStroke(1.dp, color)
+    }
+}
+
+@Composable
+private fun ButtonText(
+    text: String,
+    enabled: Boolean,
+    darkTheme: Boolean
+)  {
+    LargeText(
+        text = text,
+        color = if (darkTheme) {
+            if (enabled) MaterialTheme.colors.onPrimary else MaterialTheme.colors.background
+        } else {
+            if (enabled) MaterialTheme.colors.onPrimary else MaterialTheme.colors.primary
+        }
     )
 }
 
@@ -308,7 +328,7 @@ fun TextWithLeadingIcon(
 fun TextAndRadio(
     text: String,
     radioID: Int,
-    radioChoice: MutableState<Int>,      // reflect state change when clicking radio button
+    radioChoice: MutableState<Int>,
     enableOtherUI: MutableState<Boolean>? = null
 ) {
     Row(

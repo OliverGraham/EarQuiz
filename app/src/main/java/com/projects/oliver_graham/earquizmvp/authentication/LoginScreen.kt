@@ -12,7 +12,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -23,8 +22,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.projects.oliver_graham.earquizmvp.ui.*
 import com.projects.oliver_graham.earquizmvp.R
+import com.projects.oliver_graham.earquizmvp.ui.*
 
 @Composable
 fun LoginScreen(viewModel: LoginScreenViewModel) {
@@ -78,26 +77,30 @@ fun LoginScreen(viewModel: LoginScreenViewModel) {
         }
 
         CenteredContentRow(padding = 8.dp) { ->
-            LargeButton(
-                onClick = { viewModel.onLoginButtonClick() },
-                mutableEnabled = viewModel.loginButtonEnabled,
-            ) { ->
-                LargeText(text = "Login")
-            }
+            ThemeButton(
+                text = "Login",
+                onButtonClick = { viewModel.onLoginButtonClick() },
+                mutableEnabled = viewModel.loginButtonEnabled
+            )
         }
         CenteredContentRow(padding = 8.dp) { ->
            LargeButton(onClick = {
                 googleSignInActivity.launch(viewModel.getGoogleSignInIntent())
             }) { ->
-               Image(painterResource(id = R.drawable.googleg_standard_color_18), contentDescription = "")
+               Image(painterResource(
+                   id = R.drawable.googleg_standard_color_18),
+                   contentDescription = "Google's 'G'"
+               )
                LargeText(text = "oogle")
             }
         }
         CenteredContentRow(padding = 8.dp) { ->
             val falseFacebook = remember { mutableStateOf(value = false) }
-            LargeButton(onClick = {  }, mutableEnabled = falseFacebook) { ->
-                LargeText(text = "(Facebook)")
-            }
+            ThemeButton(
+                text = "(Facebook)",
+                onButtonClick = { /* Add later */ },
+                mutableEnabled = falseFacebook
+            )
         }
         Divider(modifier = Modifier.padding(8.dp))
         CenteredContentRow(padding = 8.dp) { ->
@@ -108,8 +111,6 @@ fun LoginScreen(viewModel: LoginScreenViewModel) {
         Spacer(modifier = Modifier.padding(4.dp))
 
         Column(
-            modifier = Modifier,
-                //.fillMaxHeight(),
             verticalArrangement = Arrangement.Bottom
         ) { ->
             Row(
@@ -124,7 +125,6 @@ fun LoginScreen(viewModel: LoginScreenViewModel) {
                     Icon(Icons.Rounded.PlayArrow, contentDescription = "")
                 }
             }
-           // Spacer(modifier = Modifier.padding(8.dp))
         }
 
     }

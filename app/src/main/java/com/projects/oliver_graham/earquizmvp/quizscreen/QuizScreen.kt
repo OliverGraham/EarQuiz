@@ -67,13 +67,12 @@ fun QuizScreen(viewModel: QuizScreenViewModel) {
         }
 
         CenteredContentRow { ->
-            LargeButton(
-                onClick = { viewModel.showAnswerDialog.value = !viewModel.showAnswerDialog.value },
-                mutableEnabled = viewModel.submitButtonEnabled
-            ) { ->
-                LargeText(text = "Submit Answer", fontSize = 20.sp)
-                Icon(Icons.Rounded.KeyboardArrowUp, contentDescription = null)
-            }
+            ThemeButton(
+                text = "Submit Answer",
+                onButtonClick = { viewModel.showAnswerDialog.value = !viewModel.showAnswerDialog.value },
+                mutableEnabled = viewModel.submitButtonEnabled,
+                innerContent = { Icon(Icons.Rounded.KeyboardArrowUp, contentDescription = null) }
+            )
         }
 
         if (viewModel.showAnswerDialog.value) {
@@ -390,21 +389,16 @@ private fun PlayIntervalButtonRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly
     ) { ->
-        LargeButton(
-            onClick = { playSound() },
+        ThemeButton(
+            text = "Play Interval",
+            onButtonClick = { playSound() },
             mutableEnabled = playButtonEnabled,
-            content = { ->
-                LargeText(
-                    text = "Play Interval",
-                    fontSize = 20.sp
-                )
-                Icon(Icons.Rounded.PlayArrow, contentDescription = "")
-            }
+            innerContent = { Icon(Icons.Rounded.PlayArrow, contentDescription = "") }
         )
         LargeText(
             text = numberOfIntervalTaps.toString(),
             color = if (isSystemInDarkTheme())
-                MaterialTheme.colors.primary else MaterialTheme.colors.onPrimary,
+                MaterialTheme.colors.secondaryVariant else MaterialTheme.colors.secondaryVariant,
             fontSize = 36.sp
         )
     }

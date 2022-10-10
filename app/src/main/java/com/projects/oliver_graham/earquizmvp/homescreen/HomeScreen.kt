@@ -75,10 +75,7 @@ fun HomeScreen(
 
                     },
                     icon = Icons.Default.ArrowForward,
-                    mutableEnabled = isIconButtonEnabled,
-                    buttonBackgroundColor =
-                        if (isIconButtonEnabled.value) Color.Unspecified
-                        else Color(color = 0xFFB0BEC5)      // BlueGray200
+                    mutableEnabled = isIconButtonEnabled
                 )
 
                 NumberPickerDropdown(

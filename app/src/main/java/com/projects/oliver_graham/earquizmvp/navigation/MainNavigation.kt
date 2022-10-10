@@ -5,10 +5,7 @@ import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
@@ -68,7 +65,7 @@ fun MainNavigation(
                  TopBar(
                      navigationController = navWrapper,
                      firebaseController = firebaseController,
-                     atHomeScreenFlow = navWrapper.showBottomNavBar.value,
+                     atHomeScreen = navWrapper.showBottomNavBar.value,
                      endQuiz =  { quizController.stopCurrentQuiz() }
                  )
             },
@@ -133,7 +130,7 @@ fun MainNavigation(
 private fun TopBar(
     navigationController: NavigationController,
     firebaseController: FirebaseController,
-    atHomeScreenFlow: Boolean,
+    atHomeScreen: Boolean,
     endQuiz: () -> Unit
 ) {
     val expanded = remember { mutableStateOf(value = false) }
@@ -143,19 +140,18 @@ private fun TopBar(
         horizontalArrangement = Arrangement.SpaceAround
     ) { ->
         Image(
-            painterResource(id = R.drawable.earquiz_header_logo),
+            painterResource(id = R.drawable.logo5),
             contentDescription = "EarQuiz logo",
-            modifier = Modifier.padding(4.dp)
         )
         Column { ->
             AccountIcon(
-                atHomeScreenFlow = atHomeScreenFlow,
+                atHomeScreen = atHomeScreen,
                 expanded = expanded
             )
             AccountDropdownMenu(
                 navigationController = navigationController,
                 firebaseController = firebaseController,
-                atHomeScreenFlow = atHomeScreenFlow,
+                atHomeScreen = atHomeScreen,
                 expanded = expanded,
                 endQuiz = endQuiz
             )
@@ -165,7 +161,7 @@ private fun TopBar(
 
 @Composable
 private fun AccountIcon(
-    atHomeScreenFlow: Boolean,
+    atHomeScreen: Boolean,
     expanded: MutableState<Boolean>
 ) {
     Icon(
@@ -173,9 +169,9 @@ private fun AccountIcon(
         modifier = Modifier
             .size(40.dp)
             .shadow(elevation = 20.dp, shape = CircleShape)
-            .clickable { if (atHomeScreenFlow) expanded.value = true },
+            .clickable { if (atHomeScreen) expanded.value = true },
         contentDescription = "",
-        tint = MaterialTheme.colors.primary
+        tint = if (!isSystemInDarkTheme()) MaterialTheme.colors.primary else MaterialTheme.colors.onPrimary
     )
 }
 
@@ -183,7 +179,7 @@ private fun AccountIcon(
 private fun AccountDropdownMenu(
     navigationController: NavigationController,
     firebaseController: FirebaseController,
-    atHomeScreenFlow: Boolean,
+    atHomeScreen: Boolean,
     expanded: MutableState<Boolean>,
     endQuiz: () -> Unit
 ) {
@@ -192,7 +188,7 @@ private fun AccountDropdownMenu(
         expanded = expanded.value,
         onDismissRequest = { expanded.value = false }
     ) { ->
-        if (atHomeScreenFlow) {
+        if (atHomeScreen) {
             val isLoggedIn = firebaseController.isUserLoggedIn()
             if (isLoggedIn) {
                 DropdownMenuLoggedIn(

@@ -99,12 +99,11 @@ fun CreateAccountScreen(viewModel: CreateAccountScreenViewModel) {
         }
 
         CenteredContentRow(padding = 8.dp) { ->
-            LargeButton(
-                onClick = { viewModel.createAccountButtonClick() },
-                mutableEnabled = viewModel.createAccountButtonEnabled,
-            ) { ->
-                LargeText(text = "Create")
-            }
+            ThemeButton(
+                text = "Create",
+                onButtonClick = { viewModel.createAccountButtonClick() },
+                mutableEnabled =  viewModel.createAccountButtonEnabled
+            )
         }
     }
 }
