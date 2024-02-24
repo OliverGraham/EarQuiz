@@ -104,9 +104,12 @@ fun MainNavigation(
                 LeaderboardScreenViewModel(navWrapper, firebaseController)
             }
 
+            // Can't provide account deletion requirements for Google Play (for now, forever?)
+            // So bypass login screen for now
             AnimatedNavHost(
                 navController = navController,
-                startDestination = if (firebaseController.isUserLoggedIn()) HOME_GRAPH_ROUTE else AUTH_GRAPH_ROUTE,
+                // startDestination = if (firebaseController.isUserLoggedIn()) HOME_GRAPH_ROUTE else AUTH_GRAPH_ROUTE,
+                startDestination = HOME_GRAPH_ROUTE,
                 route = ROOT_GRAPH_ROUTE,
                 modifier = Modifier.padding(innerPadding)
             ) { ->
@@ -169,7 +172,12 @@ private fun AccountIcon(
         modifier = Modifier
             .size(40.dp)
             .shadow(elevation = 20.dp, shape = CircleShape)
-            .clickable { if (atHomeScreen) expanded.value = true },
+            .clickable {
+                // Can't provide account deletion requirements for Google Play (for now, forever?)
+                // Don't allow navigation to Login Screen
+                expanded.value = false
+                // if (atHomeScreen) expanded.value = true
+            },
         contentDescription = "",
         tint = if (!isSystemInDarkTheme()) MaterialTheme.colors.primary else MaterialTheme.colors.onPrimary
     )

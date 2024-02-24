@@ -53,8 +53,6 @@ fun validate(text: String) {
     isError = /* .... */
 }
 
-
-
 Column {
     TextField(
         value = text,
