@@ -8,12 +8,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.projects.oliver_graham.earquizmvp.data.FirebaseController
 import com.projects.oliver_graham.earquizmvp.data.musictheory.MusicTheory
-import com.projects.oliver_graham.earquizmvp.data.musictheory.Note
 import com.projects.oliver_graham.earquizmvp.data.quiz.Quiz
 import com.projects.oliver_graham.earquizmvp.data.quiz.QuizQuestion
 import com.projects.oliver_graham.earquizmvp.navigation.NavigationController
 import com.projects.oliver_graham.earquizmvp.sounds.SoundPlayer
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 // TODO: Move quiz logic out of view model. Will strive to have it contain
 //       only logic pertaining to the UI
@@ -55,6 +55,7 @@ class QuizScreenViewModel(
 
     // is needed?
     private val currentCorrectAnswer: MutableState<Int> = mutableStateOf(value = 0)
+    private val currentRandomInterval: MutableState<Boolean> = mutableStateOf(value = true)
 
     val radioGroup: SnapshotStateList<Pair<Int, String>> = mutableStateListOf()
 
@@ -68,24 +69,10 @@ class QuizScreenViewModel(
 
     /** */
     fun resetQuizPage() {
+        resetQuizPartOne()
 
-        // unselect radio button, disable submit button, empty the four random choices and sound list
-        currentUserChoice.value = 0
-        submitButtonEnabled.value = false
-        emptyRadioGroup()
-        soundPlayer.emptyPitchList()
-
-        if (currentQuiz.isInProgress) {
-
-            // add new sounds and set correct value
-            soundPlayer.addPitches(currentQuestion.soundIds)
-            currentCorrectAnswer.value = currentQuestion.correctId
-
-            // get labels, one correct and three incorrect and shuffle answers
-            quizController.getCurrentQuestionLabels()
-                .forEach { labelPair -> radioGroup.add(labelPair) }
-            radioGroup.shuffle()
-        }
+        if (!currentQuiz.isInProgress) return
+        resetIfQuizInProgress()
     }
 
     /** starting values for new quiz question */
@@ -124,8 +111,10 @@ class QuizScreenViewModel(
         if (countTowardScore)
             numberOfIntervalTaps.value++
 
-        // plays sound based on which quiz has been selected
-        soundPlayer.play(quizIndex = currentQuiz.quizIndex)
+        soundPlayer.play(
+            quiz = currentQuiz,
+            randomInterval = currentRandomInterval.value
+        )
 
         playButtonEnabled.value = true
     }
@@ -158,6 +147,26 @@ class QuizScreenViewModel(
 
     /** */
     fun navToLeaderboardScreen() { navController.navLeaderboardScreenPopAndTop() }
+
+    /** Unselect radio button, disable submit button, empty the four random choices and sound list */
+    private fun resetQuizPartOne() {
+        currentUserChoice.value = 0
+        submitButtonEnabled.value = false
+        emptyRadioGroup()
+        soundPlayer.emptyPitchList()
+    }
+
+    private fun resetIfQuizInProgress() {
+        // add new sounds and set correct value
+        soundPlayer.addPitches(currentQuestion.soundIds)
+        currentCorrectAnswer.value = currentQuestion.correctId
+        currentRandomInterval.value = Random.nextBoolean()
+
+        // get labels, one correct and three incorrect and shuffle answers
+        quizController.getCurrentQuestionLabels()
+            .forEach { labelPair -> radioGroup.add(labelPair) }
+        radioGroup.shuffle()
+    }
 
     /** */
     // later, could save results of individual quizzes. For now, just save right and wrong answers
