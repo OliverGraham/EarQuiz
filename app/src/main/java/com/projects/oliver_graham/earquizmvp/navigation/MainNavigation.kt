@@ -430,14 +430,9 @@ private fun RowScope.BottomNavItem(
         },
         selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
         onClick = {
-            if (quizController.quizInProgress.value.isInProgress) {
-                bottomNavClick(
-                    navController = navController,
-                    route = screen.route,
-                    navItemSelectedIndex = selectedIndex,
-                    index = index
-                )
-            } else if (screen.route != Screen.QuizScreen.route) {
+            val shouldAllowClick =
+                quizController.isQuizInProgress() || screen.route != Screen.QuizScreen.route
+            if (shouldAllowClick) {
                 bottomNavClick(
                     navController = navController,
                     route = screen.route,

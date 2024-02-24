@@ -12,90 +12,108 @@ sealed class Quiz private constructor(
     val title: String = "",
     val quizScreenTitle: String = "",
     val descriptions: List<String> = listOf(),
-    val isEnabled: Boolean = false,              // if quiz is supported yet
+    val isEnabled: Boolean = false,
     val questionList: MutableList<QuizQuestion> = mutableListOf(),
     var isInProgress: Boolean = false,
-    var totalQuestions: Int = 3,                 // will change # of questions from HomeScreen later
+    var totalQuestions: Int = 3,
 ) {
-    private object MelodicIntervalQuiz : Quiz(
+    object MelodicIntervalQuiz : Quiz(
         quizIndex = 0,
         title = "Melodic Intervals",
         quizScreenTitle = "Melodic\nIntervals",
         descriptions = QuizRepository.getMelodicQuizDescriptions(),
         isEnabled = true
     )
-    private object HarmonicIntervalQuiz : Quiz(
+    object HarmonicIntervalQuiz : Quiz(
         quizIndex = 1,
         title = "Harmonic Intervals",
         quizScreenTitle = "Harmonic\nIntervals",
         descriptions = QuizRepository.getHarmonicQuizDescriptions(),
         isEnabled = true
     )
-    private object RandomIntervalsQuiz : Quiz(
+    object RandomIntervalsQuiz : Quiz(
         quizIndex = 2,
         title = "Random Interval Mix",
         descriptions = QuizRepository.getRandomIntervalsQuizDescription(),
-        isEnabled = false
+        isEnabled = true
     )
-    private object EasyChordQuiz : Quiz(
+    object EasyChordQuiz : Quiz(
         quizIndex = 3,
         title = "Easy Chords",
         descriptions = QuizRepository.getEasyChordQuizDescription(),
         isEnabled = false
     )
-    private object MediumChordQuiz : Quiz(
+    object MediumChordQuiz : Quiz(
         quizIndex = 4,
         title = "Medium Chords",
         descriptions = QuizRepository.getMediumChordQuizDescription(),
         isEnabled = false
     )
-    private object RandomMixQuiz : Quiz(
+    object RandomMixQuiz : Quiz(
         quizIndex = 5,
         title = "Random Interval/Chord Mix",
         descriptions = QuizRepository.getRandomMixQuizDescription(),
         isEnabled = false
     )
-    private object FakeQuiz : Quiz()  // this serves as the initial value for the mutable state
+    object FakeQuiz : Quiz()  // this serves as the initial value for the mutable state
                                       // is there another way? Couldn't find one
 
-    // public static api for all things quiz related
     companion object {
-        val quizInProgress: MutableState<Quiz> = mutableStateOf(value = FakeQuiz)
+        private val quizInProgress: MutableState<Quiz> = mutableStateOf(value = FakeQuiz)
+
+
 
         fun setQuizInProgress(quiz: Quiz, numberOfQuestions: Int) {
             quizInProgress.value = quiz
             quizInProgress.value.isInProgress = true
             quiz.totalQuestions = numberOfQuestions
-            createQuizQuestions(numberOfQuestions)
+            createQuizQuestions(numberOfQuestions = numberOfQuestions)
         }
-
-        fun getQuizScreenTitle(): String = quizInProgress.value.title
 
         fun getQuizInProgress(): Quiz = quizInProgress.value
 
+        fun isQuizInProgress(): Boolean = quizInProgress.value.isInProgress
+
         private fun createQuizQuestions(numberOfQuestions: Int) {
+            val quiz = quizInProgress.value
+            if (!quiz.isInProgress) return
 
-            if (quizInProgress.value.isInProgress) {
-                for (i in 0..numberOfQuestions) {
+            when (quiz) {
+                RandomIntervalsQuiz,
+                MelodicIntervalQuiz,
+                HarmonicIntervalQuiz -> createTwoNoteQuiz(numberOfQuestions)
+                EasyChordQuiz -> TODO()
+                MediumChordQuiz -> TODO()
+                RandomMixQuiz -> TODO()
+                FakeQuiz -> TODO()
+            }
+        }
 
-                    // three random intervals and one correct
-                    val twoCurrentNotes: List<Note> = MusicTheory.createTwoRandomNotes()
-                    val noteOne = twoCurrentNotes[0]
-                    val noteTwo = twoCurrentNotes[1]
-                    val keyInterval: Int = kotlin.math.abs(n = noteOne.pitch - noteTwo.pitch)
-                    val randomIntervals: List<Int> = MusicTheory.getRandomIntervals(keyInterval)
+        private fun createTwoNoteQuiz(numberOfQuestions: Int) {
+            for (i in 0..numberOfQuestions) {
+                // three random intervals and one correct
+                val twoCurrentNotes: List<Note> = MusicTheory.createTwoRandomNotes()
+                val noteOne = twoCurrentNotes[0]
+                val noteTwo = twoCurrentNotes[1]
+                val keyInterval: Int = kotlin.math.abs(n = noteOne.pitch - noteTwo.pitch)
+                val randomIntervals: List<Int> = MusicTheory.getRandomIntervals(keyInterval)
 
-                    quizInProgress.value.questionList.add(
-                        QuizQuestion(
-                            correctId = keyInterval,
-                            correctText = MusicTheory.getIntervalLabel(keyInterval),
-                            allAnswers = randomIntervals,
-                            soundIds = listOf(noteOne.pitch, noteTwo.pitch),
-                            firstNote = noteOne.imageId,
-                            secondNote = noteTwo.imageId
-                        )
+                quizInProgress.value.questionList.add(
+                    QuizQuestion(
+                        correctId = keyInterval,
+                        correctText = MusicTheory.getIntervalLabel(keyInterval),
+                        allAnswers = randomIntervals,
+                        soundIds = listOf(noteOne.pitch, noteTwo.pitch),
+                        firstNote = noteOne.imageId,
+                        secondNote = noteTwo.imageId
                     )
-                }
+                )
+            }
+        }
+
+        private fun createThreeNoteQuiz(numberOfQuestions: Int) {
+            for (i in 0..numberOfQuestions) {
+                // TODO
             }
         }
 
@@ -103,7 +121,6 @@ sealed class Quiz private constructor(
             return quizInProgress.value.questionList[quizInProgress.value.questionList.lastIndex]
         }
 
-        // remove from end
         fun removeAskedQuestion() {
             quizInProgress.value.questionList.removeAt(quizInProgress.value.questionList.lastIndex)
         }

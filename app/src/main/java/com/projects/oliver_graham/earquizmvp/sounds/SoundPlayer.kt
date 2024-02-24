@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.runtime.Immutable
 import android.media.AudioAttributes
 import android.media.SoundPool
+import com.projects.oliver_graham.earquizmvp.data.quiz.Quiz
 import kotlinx.coroutines.delay
 
 private const val MAX_STREAMS = 3       // change to play more notes simultaneously
@@ -27,11 +28,20 @@ class SoundPlayer(
     fun addPitches(pitchList: List<Int>) { pitchList.forEach { pitch -> pitches.add(pitch) }  }
     fun emptyPitchList() { pitches.clear() }
 
-    suspend fun play(quizIndex: Int) {
-        when (quizIndex) {
-            0 -> playMelodicInterval()
-            1 -> playHarmonicInterval()
-            2 -> playChord()
+    suspend fun play(
+        quiz: Quiz,
+        randomInterval: Boolean,
+    ) {
+        when (quiz) {
+            Quiz.EasyChordQuiz -> TODO()
+            Quiz.FakeQuiz -> TODO()
+            Quiz.HarmonicIntervalQuiz -> playHarmonicInterval()
+            Quiz.MediumChordQuiz -> TODO()
+            Quiz.MelodicIntervalQuiz -> playMelodicInterval()
+            Quiz.RandomIntervalsQuiz -> {
+                if (randomInterval) playHarmonicInterval() else playMelodicInterval()
+            }
+            Quiz.RandomMixQuiz -> TODO()
         }
     }
 

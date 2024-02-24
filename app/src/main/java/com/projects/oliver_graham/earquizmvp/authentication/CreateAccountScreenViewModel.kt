@@ -19,7 +19,6 @@ class CreateAccountScreenViewModel(
     val confirmPasswordTextField: MutableState<String> = mutableStateOf(value = "")
     val createAccountButtonEnabled: MutableState<Boolean> = mutableStateOf(value = false)
 
-
     fun enableCreateAccountButton() {
         createAccountButtonEnabled.value =
             usernameTextField.value.isNotEmpty() &&
